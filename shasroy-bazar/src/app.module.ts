@@ -11,8 +11,6 @@ import { AdministratorModule } from './administrator/administrator.module.js';
 import { NotificationModule } from './notification/notification.module.js';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { OrganizationsModule } from './organizations/organizations.module.js';
-import { AdvertisementsModule } from './advertisements/advertisements.module.js';
 
 @Module({
   imports: [
@@ -32,7 +30,7 @@ import { AdvertisementsModule } from './advertisements/advertisements.module.js'
     }),
 
 
-    AuthModule, UsersModule, EkycModule, ServiceZonesModule, MerchantsModule, MerchantZonesModule, AdministratorModule, NotificationModule, OrganizationsModule, AdvertisementsModule
+    AuthModule, UsersModule, EkycModule, ServiceZonesModule, MerchantsModule, MerchantZonesModule, AdministratorModule, NotificationModule
 ],
   controllers: [AppController],
   providers: [AppService],
