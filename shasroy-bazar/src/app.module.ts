@@ -13,6 +13,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from './products/products.module.js';
 //import { PricingModule } from './pricing/pricing.module.js';
+import { ExpiryModule } from './expiry/expiry.module.js';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { ProductsModule } from './products/products.module.js';
     }),
 
 
-    AuthModule, UsersModule, EkycModule, ServiceZonesModule, MerchantsModule, MerchantZonesModule, AdministratorModule, NotificationModule, ProductsModule, 
+    AuthModule, UsersModule, EkycModule, ServiceZonesModule, MerchantsModule, MerchantZonesModule, AdministratorModule, NotificationModule, ProductsModule, ExpiryModule, 
 ],
   controllers: [AppController],
   providers: [AppService],
