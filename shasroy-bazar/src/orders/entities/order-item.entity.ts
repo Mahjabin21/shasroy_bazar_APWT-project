@@ -5,6 +5,7 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  type Relation,
 } from 'typeorm';
 
 import { OrderEntity } from './order.entity.js';
@@ -25,7 +26,7 @@ export class OrderItemEntity {
 
   @ManyToOne(() => OrderEntity, { nullable: false })
   @JoinColumn({ name: 'order_id' })
-  order!: OrderEntity;
+  order!: Relation<OrderEntity>;
 
   @Column({ type: 'integer', nullable: true })
   listing_id!: number | null;
