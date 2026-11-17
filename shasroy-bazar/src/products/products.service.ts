@@ -1,49 +1,70 @@
-import { Injectable,NotFoundException, BadRequestException, } from '@nestjs/common';
+
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import {Product, ProductListingStatus,} from './entities/product.entity.js';
+import {
+  Product,
+  ProductListingStatus,
+} from './entities/product.entity.js';
+
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
-
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  
   ) {}
-// create product
- async create(createProductDto: CreateProductDto) {
-  const expiry = new Date(createProductDto.expiryDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
-  if (expiry < today) {
-    throw new BadRequestException(
-      'Cannot list a product that has already expired.',
-    );
+  // CREATE PRODUCT
+  async create(createProductDto: CreateProductDto) {
+    const expiry = new Date(createProductDto.expiryDate);
+
+    if (Number.isNaN(expiry.getTime())) {
+      throw new BadRequestException('Invalid expiry date.');
+    }
+
+    const expiryDate = createProductDto.expiryDate.slice(0, 10);
+
+    const now = new Date();
+    const today =
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    if (expiryDate < today) {
+      throw new BadRequestException(
+        'Cannot list a product that has already expired.',
+      );
+    }
+
+    // Calculate customer price (one-third of original price)
+    const systemPrice = (
+      Number(createProductDto.merchantOriginalPrice) / 3
+    ).toFixed(2);
+
+    const product = this.productRepository.create({
+      productName: createProductDto.productName,
+      category: createProductDto.category,
+      description: createProductDto.description ?? null,
+      quantityAvailable: createProductDto.quantityAvailable,
+      unit: createProductDto.unit,
+      productPhotoUrl: createProductDto.productPhotoUrl ?? null,
+      expiryDate: createProductDto.expiryDate,
+      expiryPhotoUrl: createProductDto.expiryPhotoUrl,
+      merchantId: createProductDto.merchantId,
+      merchantOriginalPrice: createProductDto.merchantOriginalPrice,
+      systemPrice,
+      listingStatus: ProductListingStatus.ACTIVE,
+    });
+
+    return this.productRepository.save(product);
   }
-
-  const product = this.productRepository.create({
-    ...createProductDto,
-
-    description: createProductDto.description ?? null,
-    productPhotoUrl: createProductDto.productPhotoUrl ?? null,
-
-    merchantOriginalPrice: createProductDto.merchantOriginalPrice,
-    systemPrice: null,
-
-    listingStatus: ProductListingStatus.ACTIVE,
-
-    reviewedAt: null,
-    reviewedByAdminId: null,
-    rejectionReason: null,
-  });
-
-  return this.productRepository.save(product);
-}
 
   // GET ALL ACTIVE PRODUCTS
   async findAll() {
@@ -104,20 +125,45 @@ export class ProductsService {
 
     if (updateProductDto.expiryDate) {
       const expiry = new Date(updateProductDto.expiryDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
 
-      if (expiry < today) {
+      if (Number.isNaN(expiry.getTime())) {
+        throw new BadRequestException('Invalid expiry date.');
+      }
+
+      const expiryDate = updateProductDto.expiryDate.slice(0, 10);
+
+      const now = new Date();
+      const today =
+        `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+      if (expiryDate < today) {
         throw new BadRequestException(
           'Expiry date cannot be in the past.',
         );
       }
     }
 
-    // Do not allow changing ownership through an update.
-    
-    Object.assign(product, updateProductDto);
-    
+    // Update only permitted fields
+    if (updateProductDto.description !== undefined) {
+      product.description = updateProductDto.description;
+    }
+
+    if (updateProductDto.quantityAvailable !== undefined) {
+      product.quantityAvailable = updateProductDto.quantityAvailable;
+    }
+
+    if (updateProductDto.productPhotoUrl !== undefined) {
+      product.productPhotoUrl = updateProductDto.productPhotoUrl;
+    }
+
+    if (updateProductDto.expiryDate !== undefined) {
+      product.expiryDate = updateProductDto.expiryDate;
+    }
+
+    if (updateProductDto.expiryPhotoUrl !== undefined) {
+      product.expiryPhotoUrl = updateProductDto.expiryPhotoUrl;
+    }
+
     return this.productRepository.save(product);
   }
 

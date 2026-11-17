@@ -10,8 +10,6 @@ import {
 
 export enum ProductListingStatus {
   ACTIVE = 'ACTIVE',
-   PENDING_REVIEW = 'PENDING_REVIEW',
-  REJECTED = 'REJECTED',
   REMOVED = 'REMOVED',
 }
 
@@ -53,13 +51,22 @@ export class Product {
   expiryPhotoUrl: string;
 
   @Column({
+    name: 'merchant_original_price',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
+  merchantOriginalPrice: string | number | null;
+
+  @Column({
     name: 'system_price',
     type: 'decimal',
     precision: 10,
     scale: 2,
     nullable: true,
   })
-  systemPrice: number|null;
+  systemPrice: string | number | null;
 
   @Column({
     name: 'listing_status',
@@ -69,35 +76,12 @@ export class Product {
   })
   listingStatus: ProductListingStatus;
 
-  @Column({ name: 'reviewed_at', type: 'timestamp', nullable: true })
-  reviewedAt: Date | null;
-
-  @Column({ name: 'rejection_reason', type: 'text', nullable: true })
-  rejectionReason: string | null;
-
   @Column({ name: 'merchant_id', type: 'uuid' })
   merchantId: string;
-
-  @Column({
-  name: 'merchant_original_price',
-  type: 'decimal',
-  precision: 10,
-  scale: 2,
-  nullable: true,
-})
-merchantOriginalPrice: string | number | null;
-
-  @Column({ name: 'market_price_ref_id', type: 'uuid', nullable: true })
-  marketPriceRefId: string | null;
-
-  @Column({ name: 'reviewed_by_admin_id', type: 'uuid', nullable: true })
-  reviewedByAdminId: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
-  
 }
