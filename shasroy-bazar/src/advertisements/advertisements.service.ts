@@ -19,7 +19,8 @@ export class AdvertisementsService {
     private readonly orgRepo: Repository<Organization>,
   ) {}
 
-  async createAdvertisement(ad: CreateAdvertisementDto): Promise<Advertisement> {
+  async createAdvertisement(ad: CreateAdvertisementDto)
+  {
     const org = await this.orgRepo.findOne({
       where: {
         org_id: ad.org_id,
@@ -43,7 +44,7 @@ export class AdvertisementsService {
     }
   }
 
-  async getAllAdvertisements(): Promise<Advertisement[]> {
+  async getAllAdvertisements() {
     return await this.adRepo.find({
             relations: {
         organization: true,
@@ -51,7 +52,7 @@ export class AdvertisementsService {
     });
   }
 
-  async getAdvertisementById(id: number): Promise<Advertisement> {
+  async getAdvertisementById(id: number){
     const ad = await this.adRepo.findOne({
       where: {
         ad_id: id,
@@ -69,7 +70,7 @@ export class AdvertisementsService {
   async updateAdvertisement(
     id: number,
     ad: UpdateAdvertisementDto,
-  ): Promise<string> {
+  ) {
     const oldAd = await this.getAdvertisementById(id);
 
     if (ad.org_id) {
@@ -93,7 +94,7 @@ export class AdvertisementsService {
     return `Advertisement updated with id ${id}`;
   }
 
-    async approveAdvertisement(id: number, adminId: number): Promise<string> {
+    async approveAdvertisement(id: number, adminId: number){
     const result = (
       await this.adRepo.update(id, {
         ad_status: 'approved',
@@ -107,7 +108,7 @@ export class AdvertisementsService {
     }
   }
 
-  async deleteAdvertisement(id: number): Promise<string> {
+  async deleteAdvertisement(id: number) {
     const result = (await this.adRepo.delete(id)).affected;
     if (result != null && result > 0) {
       return `Advertisement deleted with id ${id}`;
