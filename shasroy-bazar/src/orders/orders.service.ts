@@ -1,4 +1,5 @@
 
+
 import {
   BadRequestException,
   Injectable,
@@ -33,11 +34,17 @@ export class OrdersService {
   ) {}
 
   // 1. Place a new order
-  async placeOrder(dto: CreateOrderDto): Promise<OrderEntity> {
+  async placeOrder(
+    dto: CreateOrderDto,
+    userId: number,
+  ): Promise<OrderEntity> {
     const fulfillmentType = dto.fulfillment_type ?? 'pickup';
 
     // Validate order details
-    if (fulfillmentType === 'delivery' && !dto.delivery_address) {
+    if (
+      fulfillmentType === 'delivery' &&
+      !dto.delivery_address
+    ) {
       throw new BadRequestException(
         'delivery_address is required for delivery orders',
       );
@@ -64,7 +71,10 @@ export class OrdersService {
 
       // Check every product and reserve its stock
       for (const item of dto.items) {
-        if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+        if (
+          !Number.isInteger(item.quantity) ||
+          item.quantity < 1
+        ) {
           throw new BadRequestException(
             'Quantity must be a positive integer',
           );
@@ -94,7 +104,9 @@ export class OrdersService {
         }
 
         // Check available stock
-        const availableStock = Number(product.quantityAvailable);
+        const availableStock = Number(
+          product.quantityAvailable,
+        );
 
         if (availableStock < item.quantity) {
           throw new BadRequestException(
@@ -111,11 +123,13 @@ export class OrdersService {
           );
         }
 
-        // Calculate total in paisa to avoid repeated decimal calculations
-        totalPaisa += Math.round(price * 100) * item.quantity;
+        // Calculate total in paisa
+        totalPaisa +=
+          Math.round(price * 100) * item.quantity;
 
         // Reserve product stock
-        product.quantityAvailable = availableStock - item.quantity;
+        product.quantityAvailable =
+          availableStock - item.quantity;
 
         await productRepo.save(product);
 
@@ -126,7 +140,7 @@ export class OrdersService {
         });
       }
 
-      // Generate pickup details if the order is for pickup
+      // Generate pickup details if required
       const pickupCode =
         fulfillmentType === 'pickup'
           ? String(randomInt(100000, 1000000))
@@ -144,7 +158,10 @@ export class OrdersService {
         pickup_code: pickupCode,
         reservation_expires_at: reservationExpiresAt,
         total_amount: (totalPaisa / 100).toFixed(2),
-        user_id: dto.user_id,
+
+        // Get user ID from authenticated JWT
+        user_id: userId,
+
         zone_id: dto.zone_id,
         delivery_address: dto.delivery_address ?? null,
         recipient_phone: dto.recipient_phone ?? null,
@@ -164,7 +181,7 @@ export class OrdersService {
 
       await itemRepo.save(orderItems);
 
-      // Return the order with its items
+      // Return order with items
       return orderRepo.findOneOrFail({
         where: { order_id: savedOrder.order_id },
         relations: { items: true },
@@ -172,7 +189,7 @@ export class OrdersService {
     });
   }
 
-  // 2. Get all orders
+  // 2. Get all orders (Admin)
   async getAllOrders(): Promise<OrderEntity[]> {
     return this.orderRepo.find({
       relations: { items: true },
@@ -181,7 +198,9 @@ export class OrdersService {
   }
 
   // 3. Get orders belonging to a particular user
-  async getOrdersByUser(userId: number): Promise<OrderEntity[]> {
+  async getOrdersByUser(
+    userId: number,
+  ): Promise<OrderEntity[]> {
     return this.orderRepo.find({
       where: { user_id: userId },
       relations: { items: true },
@@ -189,7 +208,7 @@ export class OrdersService {
     });
   }
 
-  // 4. Get a single order by ID
+  // 4. Get a single order by ID (internal/admin use)
   async getOrderById(id: number): Promise<OrderEntity> {
     const order = await this.orderRepo.findOne({
       where: { order_id: id },
@@ -197,13 +216,37 @@ export class OrdersService {
     });
 
     if (!order) {
-      throw new NotFoundException(`Order with id ${id} not found`);
+      throw new NotFoundException(
+        `Order with id ${id} not found`,
+      );
     }
 
     return order;
   }
 
-  // 5. Update order status
+  // 5. Get a specific order belonging to a user
+  async getOrderByIdForUser(
+    orderId: number,
+    userId: number,
+  ): Promise<OrderEntity> {
+    const order = await this.orderRepo.findOne({
+      where: {
+        order_id: orderId,
+        user_id: userId,
+      },
+      relations: { items: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        `Order with id ${orderId} not found`,
+      );
+    }
+
+    return order;
+  }
+
+  // 6. Update order status
   async updateOrderStatus(
     id: number,
     dto: UpdateOrderStatusDto,
@@ -218,7 +261,9 @@ export class OrdersService {
       });
 
       if (!order) {
-        throw new NotFoundException(`Order with id ${id} not found`);
+        throw new NotFoundException(
+          `Order with id ${id} not found`,
+        );
       }
 
       // Prevent changes to completed or cancelled orders
@@ -260,9 +305,12 @@ export class OrdersService {
           });
 
           if (product) {
-            const currentStock = Number(product.quantityAvailable);
+            const currentStock = Number(
+              product.quantityAvailable,
+            );
 
-            product.quantityAvailable = currentStock + item.quantity;
+            product.quantityAvailable =
+              currentStock + item.quantity;
 
             await productRepo.save(product);
           }
