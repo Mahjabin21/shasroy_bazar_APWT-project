@@ -1,73 +1,90 @@
+
 import {
+  Body,
   Controller,
-  Post,
   Get,
   Param,
   ParseIntPipe,
-  Body,
+  Patch,
+  Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
 
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { PaymentService } from './payment.service.js';
-import { SimulatePaymentDto } from './dto/simulate-payment.dto.js';
+import { OrdersService } from './orders.service.js';
+import { CreateOrderDto } from './dto/create-order.dto.js';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
 
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
 
-type AuthenticatedRequest = Request & {
-  user: {
-    userId: number;
-    role: string;
-  };
-};
-
-@ApiTags('Payments')
-@ApiBearerAuth('JWT-auth')
-@Controller('payments')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('user')
-export class PaymentsController {
+@ApiTags('Orders')
+@Controller('orders')
+export class OrdersController {
   constructor(
-    private readonly paymentsService: PaymentService,
+    private readonly ordersService: OrdersService,
   ) {}
 
-  // Simulate payment for an order
-  @Post('orders/:orderId/simulate')
-  simulatePayment(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: SimulatePaymentDto,
+  // Customer: Place a new order
+  @Post('place-order')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user')
+  @ApiOperation({ summary: 'Place an order' })
+  placeOrder(
+    @Req() req: any,
+    @Body() dto: CreateOrderDto,
   ) {
-    return this.paymentsService.simulatePayment(
-      orderId,
+    return this.ordersService.placeOrder(
+      dto,
       req.user.userId,
+    );
+  }
+
+  // Admin: Get all orders
+  @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  getAllOrders() {
+    return this.ordersService.getAllOrders();
+  }
+
+  // Customer: Get their own orders
+  @Get('my-orders')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user')
+  getMyOrders(@Req() req: any) {
+    return this.ordersService.getOrdersByUser(
+      req.user.userId,
+    );
+  }
+
+  // Admin: Update order status
+  @Patch('update-status/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  updateOrderStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateOrderStatusDto,
+  ) {
+    return this.ordersService.updateOrderStatus(
+      id,
       dto,
     );
   }
 
-  // Get payment history of logged-in customer
-  @Get('my-payments')
-  getMyPayments(
-    @Req() req: AuthenticatedRequest,
+  // Customer: Get a specific order they own
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user')
+  getOrderById(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: any,
   ) {
-    return this.paymentsService.getMyPayments(
-      req.user.userId,
-    );
-  }
-
-  // Get payment history for a specific order
-  @Get('orders/:orderId')
-  getPaymentsByOrder(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Req() req: AuthenticatedRequest,
-  ) {
-    return this.paymentsService.getPaymentsByOrder(
-      orderId,
+    return this.ordersService.getOrderByIdForUser(
+      id,
       req.user.userId,
     );
   }

@@ -1,3 +1,4 @@
+
 import {
   Injectable,
   NotFoundException,
@@ -6,213 +7,337 @@ import {
 } from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { randomUUID } from 'node:crypto';
-import { PaymentEntity } from './entities/payment.entity.js';
-import { OrderEntity } from '../orders/entities/order.entity.js';
-import { SimulatePaymentDto } from './dto/simulate-payment.dto.js';
+import { DataSource, Repository } from 'typeorm';
+import { randomInt } from 'node:crypto';
+
+import { OrderEntity } from './entities/order.entity.js';
+import { OrderItemEntity } from './entities/order-item.entity.js';
+import { Product, ProductListingStatus } from '../products/entities/product.entity.js';
+
+import { CreateOrderDto } from './dto/create-order.dto.js';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
 
 @Injectable()
-export class PaymentService {
+export class OrdersService {
   constructor(
-    @InjectRepository(PaymentEntity)
-    private readonly paymentRepository: Repository<PaymentEntity>,
+    @InjectRepository(OrderEntity)
+    private readonly orderRepository: Repository<OrderEntity>,
 
     private readonly dataSource: DataSource,
   ) {}
 
-  // SIMULATE PAYMENT
-  async simulatePayment(
-    orderId: number,
+  // 1. Place a new order
+  async placeOrder(
+    dto: CreateOrderDto,
     userId: number,
-    dto: SimulatePaymentDto,
-  ) {
+  ): Promise<OrderEntity> {
+    const fulfillmentType = dto.fulfillment_type ?? 'pickup';
+
+    if (
+      fulfillmentType === 'delivery' &&
+      !dto.delivery_address
+    ) {
+      throw new BadRequestException(
+        'Delivery address is required for delivery orders',
+      );
+    }
+
+    if (!Number.isInteger(dto.zone_id) || dto.zone_id < 1) {
+      throw new BadRequestException('Invalid service zone');
+    }
+
+    if (!dto.items || dto.items.length === 0) {
+      throw new BadRequestException(
+        'An order must contain at least one product',
+      );
+    }
+
     return this.dataSource.transaction(async (manager) => {
-      const orderRepository = manager.getRepository(OrderEntity);
-      const paymentRepository = manager.getRepository(PaymentEntity);
+      const orderRepo = manager.getRepository(OrderEntity);
+      const itemRepo = manager.getRepository(OrderItemEntity);
+      const productRepo = manager.getRepository(Product);
 
-      // Check whether this request was already processed.
-      // A retry must use the same idempotency reference.
-      const previousPayment = await paymentRepository.findOne({
-        where: {
-          idempotency_ref: dto.idempotency_ref,
-        },
-        relations: {
-          order: true,
-        },
-      });
+      let totalPaisa = 0;
+      const orderItems: OrderItemEntity[] = [];
 
-      if (previousPayment) {
+      // Validate every product and reserve its stock
+      for (const item of dto.items) {
         if (
-          previousPayment.order_id !== orderId ||
-          previousPayment.order.user_id !== userId
+          !Number.isInteger(item.quantity) ||
+          item.quantity < 1
         ) {
-          throw new ConflictException(
-            'This idempotency reference has already been used',
+          throw new BadRequestException(
+            'Quantity must be a positive integer',
           );
         }
 
-        return {
-          message:
-            previousPayment.payment_status === 'Success'
-              ? 'Payment successful'
-              : 'Payment failed. You may try again.',
-          payment: {
-            payment_id: previousPayment.payment_id,
-            order_id: previousPayment.order_id,
-            amount: previousPayment.amount,
-            payment_method: previousPayment.payment_method,
-            payment_status: previousPayment.payment_status,
-            provider_txn_id: previousPayment.provider_txn_id,
-            initiated_at: previousPayment.initiated_at,
-            confirmed_at: previousPayment.confirmed_at,
-          },
-          order_status: previousPayment.order.order_status,
-        };
+        // Lock the product row to prevent simultaneous stock changes
+        const product = await productRepo.findOne({
+          where: { listingId: item.listing_id },
+          lock: { mode: 'pessimistic_write' },
+        });
+
+        if (!product) {
+          throw new NotFoundException(
+            `Product listing ${item.listing_id} not found`,
+          );
+        }
+
+        if (product.listingStatus !== ProductListingStatus.ACTIVE) {
+          throw new BadRequestException(
+            `${product.productName} is not available`,
+          );
+        }
+
+        // Check product expiry using Bangladesh local date
+        const today = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Asia/Dhaka',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }).format(new Date());
+
+        if (product.expiryDate < today) {
+          throw new BadRequestException(
+            `${product.productName} has expired`,
+          );
+        }
+
+        // Check whether the product is available in the selected zone
+        const productWithZones = await productRepo.findOne({
+          where: { listingId: item.listing_id },
+          relations: { zones: true },
+        });
+
+        const isAvailableInZone =
+          productWithZones?.zones?.some(
+            (zone) => zone.zoneId === dto.zone_id,
+          );
+
+        if (!isAvailableInZone) {
+          throw new BadRequestException(
+            `${product.productName} is not available in the selected service zone`,
+          );
+        }
+
+        // Check stock
+        const availableStock = Number(product.quantityAvailable);
+
+        if (availableStock < item.quantity) {
+          throw new BadRequestException(
+            `Insufficient stock for ${product.productName}. Available: ${availableStock}`,
+          );
+        }
+
+        // Use the system-generated price, never the client-provided price
+        const price = Number(product.systemPrice);
+
+        if (!Number.isFinite(price) || price <= 0) {
+          throw new BadRequestException(
+            `Invalid system price for ${product.productName}`,
+          );
+        }
+
+        // Calculate total in paisa
+        totalPaisa += Math.round(price * 100) * item.quantity;
+
+        // Reserve stock
+        product.quantityAvailable = availableStock - item.quantity;
+        await productRepo.save(product);
+
+        // Prepare order item
+        const orderItem = itemRepo.create({
+          quantity: item.quantity,
+          unit_price: price.toFixed(2),
+          listing_id: product.listingId,
+          bundle_id: null,
+        });
+
+        orderItems.push(orderItem);
       }
 
-      // Find and lock the order
-      const order = await orderRepository.findOne({
-        where: {
-          order_id: orderId,
-          user_id: userId,
-        },
-        lock: {
-          mode: 'pessimistic_write',
-        },
+      // Generate pickup information
+      const pickupCode =
+        fulfillmentType === 'pickup'
+          ? String(randomInt(100000, 1000000))
+          : null;
+
+      const reservationExpiresAt =
+        fulfillmentType === 'pickup'
+          ? new Date(Date.now() + 2 * 60 * 60 * 1000)
+          : null;
+
+      // Create order
+      const order = orderRepo.create({
+        order_status: 'Pending Payment',
+        fulfillment_type: fulfillmentType,
+        pickup_code: pickupCode,
+        reservation_expires_at: reservationExpiresAt,
+        total_amount: (totalPaisa / 100).toFixed(2),
+        user_id: userId,
+        zone_id: dto.zone_id,
+        delivery_address: dto.delivery_address ?? null,
+        recipient_phone: dto.recipient_phone ?? null,
+      });
+
+      const savedOrder = await orderRepo.save(order);
+
+      // Save order items
+      for (const item of orderItems) {
+        item.order_id = savedOrder.order_id;
+        item.order = savedOrder;
+      }
+
+      await itemRepo.save(orderItems);
+
+      // Return the order with its items
+      const completeOrder = await orderRepo.findOne({
+        where: { order_id: savedOrder.order_id },
+        relations: { items: true },
+      });
+
+      if (!completeOrder) {
+        throw new NotFoundException('Created order could not be retrieved');
+      }
+
+      return completeOrder;
+    });
+  }
+
+  // 2. Get all orders (Admin)
+  async getAllOrders(): Promise<OrderEntity[]> {
+    return this.orderRepository.find({
+      relations: { items: true },
+      order: { order_id: 'DESC' },
+    });
+  }
+
+  // 3. Get orders belonging to a particular customer
+  async getOrdersByUser(userId: number): Promise<OrderEntity[]> {
+    return this.orderRepository.find({
+      where: { user_id: userId },
+      relations: { items: true },
+      order: { order_id: 'DESC' },
+    });
+  }
+
+  // 4. Get a single order by ID (Admin/internal use)
+  async getOrderById(id: number): Promise<OrderEntity> {
+    const order = await this.orderRepository.findOne({
+      where: { order_id: id },
+      relations: { items: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        `Order with id ${id} not found`,
+      );
+    }
+
+    return order;
+  }
+
+  // 5. Get a specific order belonging to a customer
+  async getOrderByIdForUser(
+    orderId: number,
+    userId: number,
+  ): Promise<OrderEntity> {
+    const order = await this.orderRepository.findOne({
+      where: {
+        order_id: orderId,
+        user_id: userId,
+      },
+      relations: { items: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        `Order with id ${orderId} not found`,
+      );
+    }
+
+    return order;
+  }
+
+  // 6. Update order status (Admin)
+  async updateOrderStatus(
+    id: number,
+    dto: UpdateOrderStatusDto,
+  ): Promise<OrderEntity> {
+    return this.dataSource.transaction(async (manager) => {
+      const orderRepo = manager.getRepository(OrderEntity);
+      const itemRepo = manager.getRepository(OrderItemEntity);
+      const productRepo = manager.getRepository(Product);
+
+      // Lock the order
+      const order = await orderRepo.findOne({
+        where: { order_id: id },
+        lock: { mode: 'pessimistic_write' },
       });
 
       if (!order) {
-        throw new NotFoundException('Order not found');
-      }
-
-      // Only pending-payment orders can be paid
-      if (order.order_status !== 'Pending Payment') {
-        throw new ConflictException(
-          `Payment cannot be made for an order with status: ${order.order_status}`,
+        throw new NotFoundException(
+          `Order with id ${id} not found`,
         );
       }
 
-      // Check whether this order already has a successful payment
-      const existingPayment = await paymentRepository.findOne({
-        where: {
-          order_id: orderId,
-          payment_status: 'Success',
-        },
-      });
-
-      if (existingPayment) {
+      // Do not modify completed or cancelled orders
+      if (
+        order.order_status === 'Delivered' ||
+        order.order_status === 'Cancelled'
+      ) {
         throw new ConflictException(
-          'This order has already been paid',
+          `Cannot update an order with status ${order.order_status}`,
         );
       }
 
-      // Always use the amount stored in the order
-      const amount = order.total_amount;
+      // Restore stock if the order is cancelled
+      if (dto.order_status === 'Cancelled') {
+        const items = await itemRepo.find({
+          where: { order_id: id },
+        });
 
-      if (Number(amount) <= 0) {
-        throw new BadRequestException('Invalid order amount');
+        for (const item of items) {
+          if (item.listing_id === null) {
+            continue;
+          }
+
+          const product = await productRepo.findOne({
+            where: { listingId: item.listing_id },
+            lock: { mode: 'pessimistic_write' },
+          });
+
+          if (!product) {
+            throw new NotFoundException(
+              `Product listing ${item.listing_id} not found while restoring stock`,
+            );
+          }
+
+          const currentStock = Number(product.quantityAvailable);
+
+          product.quantityAvailable =
+            currentStock + item.quantity;
+
+          await productRepo.save(product);
+        }
       }
 
-      // Generate a simulated provider transaction ID
-      const providerTxnId = `SIM-${randomUUID()}`;
+      order.order_status = dto.order_status;
 
-      // Determine simulated result
-      const paymentStatus =
-        dto.simulation_result === 'success'
-          ? 'Success'
-          : 'Failed';
+      await orderRepo.save(order);
 
-      // Create payment record
-      const payment = paymentRepository.create({
-        order_id: orderId,
-        order: order,
-        amount: amount,
-        payment_method: dto.payment_method,
-        payment_status: paymentStatus,
-        provider_txn_id: providerTxnId,
-        idempotency_ref: dto.idempotency_ref,
-        confirmed_at:
-          paymentStatus === 'Success' ? new Date() : null,
+      const updatedOrder = await orderRepo.findOne({
+        where: { order_id: id },
+        relations: { items: true },
       });
 
-      const savedPayment = await paymentRepository.save(payment);
-
-      // Update order only when payment succeeds
-      if (paymentStatus === 'Success') {
-        order.order_status = 'Confirmed';
-        await orderRepository.save(order);
+      if (!updatedOrder) {
+        throw new NotFoundException(
+          `Updated order ${id} could not be retrieved`,
+        );
       }
 
-      return {
-        message:
-          paymentStatus === 'Success'
-            ? 'Payment successful'
-            : 'Payment failed. You may try again.',
-        payment: {
-          payment_id: savedPayment.payment_id,
-          order_id: savedPayment.order_id,
-          amount: savedPayment.amount,
-          payment_method: savedPayment.payment_method,
-          payment_status: savedPayment.payment_status,
-          provider_txn_id: savedPayment.provider_txn_id,
-          initiated_at: savedPayment.initiated_at,
-          confirmed_at: savedPayment.confirmed_at,
-        },
-        order_status: order.order_status,
-      };
+      return updatedOrder;
     });
-  }
-
-  // GET ALL PAYMENTS BELONGING TO A CUSTOMER
-  async getMyPayments(userId: number) {
-    const payments = await this.paymentRepository
-      .createQueryBuilder('payment')
-      .innerJoin('payment.order', 'order')
-      .where('order.user_id = :userId', { userId })
-      .orderBy('payment.initiated_at', 'DESC')
-      .getMany();
-
-    return {
-      message: 'Payment history retrieved successfully',
-      total: payments.length,
-      payments,
-    };
-  }
-
-  // GET PAYMENTS FOR A PARTICULAR CUSTOMER ORDER
-  async getPaymentsByOrder(
-    orderId: number,
-    userId: number,
-  ) {
-    // Verify that the order belongs to the customer
-    const order = await this.dataSource
-      .getRepository(OrderEntity)
-      .findOne({
-        where: {
-          order_id: orderId,
-          user_id: userId,
-        },
-      });
-
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-
-    const payments = await this.paymentRepository.find({
-      where: {
-        order_id: orderId,
-      },
-      order: {
-        initiated_at: 'DESC',
-      },
-    });
-
-    return {
-      message: 'Order payment history retrieved successfully',
-      order_id: orderId,
-      total: payments.length,
-      payments,
-    };
   }
 }

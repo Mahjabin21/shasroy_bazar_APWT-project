@@ -15,14 +15,8 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware.js';
 import { ExpiryModule } from './expiry/expiry.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { OrdersModule } from './orders/orders.module.js';
-import { DeliveryModule } from './delivery/delivery.module.js';
-import { PurchaseLimitsModule } from './purchase-limits/purchase-limits.module.js';
 import { BundlesModule } from './bundles/bundles.module.js';
 import { PaymentsModule } from './payment/payment.module.js';
-import { OrganizationsModule } from './organizations/organizations.module.js';
-import { AdvertisementsModule } from './advertisements/advertisements.module.js';
-import { AdvertisingRevenueModule } from './advertising-revenue/advertising-revenue.module.js';
-import { DonationsModule } from './donations/donations.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
 
 @Module({
@@ -39,7 +33,7 @@ import { InventoryModule } from './inventory/inventory.module.js';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       autoLoadEntities: true,
-      synchronize: true,      
+      synchronize: false,      
     }),
 
 
@@ -54,14 +48,8 @@ import { InventoryModule } from './inventory/inventory.module.js';
     ExpiryModule, 
     ProductsModule, 
     OrdersModule, 
-    DeliveryModule, 
-    PurchaseLimitsModule, 
     BundlesModule, 
     PaymentsModule, 
-    OrganizationsModule, 
-    AdvertisementsModule,
-    AdvertisingRevenueModule,
-    DonationsModule,
     InventoryModule
 
 ],
