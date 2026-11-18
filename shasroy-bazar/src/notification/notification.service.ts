@@ -1,4 +1,5 @@
 
+
 import {
   Injectable,
   NotFoundException,
@@ -19,7 +20,7 @@ export class NotificationService {
 
   // CREATE A NOTIFICATION
   async create(
-  merchantId: string,
+  merchantId: number,
   product: Product,
   title: string,
   message: string,
@@ -35,7 +36,7 @@ export class NotificationService {
   return this.notificationRepository.save(notification);
 }
   // GET ALL NOTIFICATIONS FOR A MERCHANT
-  async findByMerchant(merchantId: string) {
+  async findByMerchant(merchantId: number) {
     return this.notificationRepository.find({
       where: { merchantId },
       order: { createdAt: 'DESC' },
@@ -43,7 +44,7 @@ export class NotificationService {
   }
 
   // MARK A NOTIFICATION AS READ
-  async markAsRead(notificationId: string, merchantId: string) {
+  async markAsRead(notificationId: string, merchantId: number) {
     const notification = await this.notificationRepository.findOne({
       where: { notificationId, merchantId },
     });

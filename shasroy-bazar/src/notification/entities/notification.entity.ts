@@ -17,8 +17,8 @@ export class Notification {
   @PrimaryGeneratedColumn('uuid', { name: 'notification_id' })
   notificationId: string;
 
-  @Column({ name: 'merchant_id', type: 'uuid' })
-  merchantId: string;
+  @Column({ name: 'merchant_id', type: 'int' })
+  merchantId: number;
 
   @ManyToOne(() => Product, {
     nullable: false,

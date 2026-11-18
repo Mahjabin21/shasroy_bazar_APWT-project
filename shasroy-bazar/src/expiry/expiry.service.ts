@@ -1,4 +1,3 @@
-
 import {Injectable,Logger,NotFoundException,BadRequestException,} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -122,7 +121,7 @@ export class ExpiryService {
 
   // REMOVE ONE LISTING AND SAVE ITS AUDIT RECORD AND NOTIFICATION
   private async removeExpiredListing(
-    listingId: string,
+    listingId: number,
     thresholdDays: number,
   ): Promise<boolean> {
     return this.dataSource.transaction(async (manager) => {
@@ -203,7 +202,7 @@ export class ExpiryService {
 
   // GET REMOVAL RECORDS FOR ONE LISTING
     // GET REMOVAL RECORDS FOR ONE LISTING
-  async findRemovalRecord(listingId: string) {
+  async findRemovalRecord(listingId: number) {
     const record = await this.removalRepository.findOne({
       where: { product: { listingId },
         },
