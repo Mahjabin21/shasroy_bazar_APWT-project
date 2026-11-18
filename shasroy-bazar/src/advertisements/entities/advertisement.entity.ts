@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import type { Organization } from '../../organizations/entities/organization.entity.js';
+import type { Administrator } from '../../administrator/entities/administrator.entity.js';
 
 @Entity('advertisement')
 export class Advertisement {
@@ -51,4 +52,8 @@ export class Advertisement {
   @ManyToOne('Organization')
   @JoinColumn({ name: 'org_id' })
   organization: Organization;
+
+  @ManyToOne('Administrator', { nullable: true })
+  @JoinColumn({ name: 'approved_by_admin_id' })
+  approvedByAdmin: Administrator;
 }

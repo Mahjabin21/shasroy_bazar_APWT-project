@@ -93,10 +93,11 @@ export class AdvertisementsService {
     return `Advertisement updated with id ${id}`;
   }
 
-  async approveAdvertisement(id: number): Promise<string> {
+    async approveAdvertisement(id: number, adminId: number): Promise<string> {
     const result = (
       await this.adRepo.update(id, {
         ad_status: 'approved',
+        approvedByAdmin: { adminId: adminId },
       })
     ).affected;
     if (result != undefined && result > 0) {
