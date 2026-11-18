@@ -35,7 +35,7 @@ export class BundlesService {
   // Find a bundle and verify that it belongs to the merchant.
   private async getMerchantBundle(
     manager: EntityManager,
-    bundleId: string,
+    bundleId: number,
     merchantId: number,
   ) {
     const bundle = await manager
@@ -60,7 +60,7 @@ export class BundlesService {
   // Calculate the total bundle price using product system prices.
   private async calculateBundlePrice(
     manager: EntityManager,
-    bundleId: string,
+    bundleId: number,
   ): Promise<string> {
     const items = await manager
       .getRepository(BundleItem)
@@ -130,7 +130,7 @@ export class BundlesService {
   }
 
   // GET /bundles/merchant/:merchantId/:bundleId
-  async findOne(bundleId: string, merchantId: number) {
+  async findOne(bundleId: number, merchantId: number) {
     const bundle = await this.bundleRepository.findOne({
       where: {
         bundleId,
@@ -152,7 +152,7 @@ export class BundlesService {
 
   // PATCH /bundles/merchant/:merchantId/:bundleId
   async update(
-    bundleId: string,
+    bundleId: number,
     merchantId: number,
     updateBundleDto: UpdateBundleDto,
   ) {
@@ -179,7 +179,7 @@ export class BundlesService {
   }
 
   // DELETE /bundles/merchant/:merchantId/:bundleId
-  async remove(bundleId: string, merchantId: number) {
+  async remove(bundleId: number, merchantId: number) {
     const bundle = await this.bundleRepository.findOne({
       where: {
         bundleId,
@@ -200,7 +200,7 @@ export class BundlesService {
 
   // POST /bundles/merchant/:merchantId/:bundleId/items
   async addItem(
-    bundleId: string,
+    bundleId: number,
     merchantId: number,
     addBundleItemDto: AddBundleItemDto,
   ) {
@@ -310,7 +310,7 @@ export class BundlesService {
 
   // PATCH /bundles/merchant/:merchantId/:bundleId/items/:listingId
   async updateItem(
-    bundleId: string,
+    bundleId: number,
     merchantId: number,
     listingId: number,
     updateBundleItemDto: UpdateBundleItemDto,
@@ -377,7 +377,7 @@ export class BundlesService {
 
   // DELETE /bundles/merchant/:merchantId/:bundleId/items/:listingId
   async removeItem(
-    bundleId: string,
+    bundleId: number,
     merchantId: number,
     listingId: number,
   ) {

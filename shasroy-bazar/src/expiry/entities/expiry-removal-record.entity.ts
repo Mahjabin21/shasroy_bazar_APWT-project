@@ -12,8 +12,8 @@ import { Product } from '../../products/entities/product.entity.js';
 
 @Entity('expiry_removal_record')
 export class ExpiryRemovalRecord {
-  @PrimaryGeneratedColumn('uuid', { name: 'removal_id' })
-  removalId: string;
+  @PrimaryGeneratedColumn({ name: 'removal_id', type: 'int' })
+  removalId: number;
 
   @OneToOne(() => Product, {
     nullable: false,

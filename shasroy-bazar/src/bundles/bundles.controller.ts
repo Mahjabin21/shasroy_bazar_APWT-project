@@ -7,7 +7,7 @@ import {
   Param,
   Patch,
   Delete,
-  ParseUUIDPipe,
+
   ParseIntPipe,
   Req,
   UseGuards,
@@ -55,7 +55,7 @@ export class BundlesController {
   // GET /bundles/:bundleId
   @Get(':bundleId')
   findOne(
-    @Param('bundleId', ParseUUIDPipe) bundleId: string,
+    @Param('bundleId', ParseIntPipe) bundleId: number,
     @Req() req: any,
   ) {
     return this.bundlesService.findOne(bundleId, req.user.merchantId);
@@ -64,7 +64,7 @@ export class BundlesController {
   // PATCH /bundles/:bundleId
   @Patch(':bundleId')
   update(
-    @Param('bundleId', ParseUUIDPipe) bundleId: string,
+    @Param('bundleId', ParseIntPipe) bundleId: number,
     @Body() updateBundleDto: UpdateBundleDto,
     @Req() req: any,
   ) {
@@ -78,7 +78,7 @@ export class BundlesController {
   // DELETE /bundles/:bundleId
   @Delete(':bundleId')
   remove(
-    @Param('bundleId', ParseUUIDPipe) bundleId: string,
+    @Param('bundleId', ParseIntPipe) bundleId: number,
     @Req() req: any,
   ) {
     return this.bundlesService.remove(bundleId, req.user.merchantId);
@@ -87,7 +87,7 @@ export class BundlesController {
   // POST /bundles/:bundleId/items
   @Post(':bundleId/items')
   addItem(
-    @Param('bundleId', ParseUUIDPipe) bundleId: string,
+    @Param('bundleId', ParseIntPipe) bundleId: number,
     @Body() addBundleItemDto: AddBundleItemDto,
     @Req() req: any,
   ) {
@@ -101,7 +101,7 @@ export class BundlesController {
   // PATCH /bundles/:bundleId/items/:listingId
   @Patch(':bundleId/items/:listingId')
   updateItem(
-    @Param('bundleId', ParseUUIDPipe) bundleId: string,
+    @Param('bundleId', ParseIntPipe) bundleId: number,
     @Param('listingId', ParseIntPipe) listingId: number,
     @Body() updateBundleItemDto: UpdateBundleItemDto,
     @Req() req: any,
@@ -117,7 +117,7 @@ export class BundlesController {
   // DELETE /bundles/:bundleId/items/:listingId
   @Delete(':bundleId/items/:listingId')
   removeItem(
-    @Param('bundleId', ParseUUIDPipe) bundleId: string,
+    @Param('bundleId', ParseIntPipe) bundleId: number,
     @Param('listingId', ParseIntPipe) listingId: number,
     @Req() req: any,
   ) {

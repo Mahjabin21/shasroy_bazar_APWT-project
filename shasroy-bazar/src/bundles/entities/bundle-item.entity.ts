@@ -13,9 +13,11 @@ import { ProductBundle } from './product-bundle.entity.js';
 import { Product } from '../../products/entities/product.entity.js';
 
 @Entity('bundle_item')
+
 export class BundleItem {
-  @PrimaryColumn({ name: 'bundle_id', type: 'uuid' })
-  bundleId: string;
+  
+  @PrimaryColumn({ name: 'bundle_id', type: 'int' })
+  bundleId: number;
 
   @PrimaryColumn({ name: 'listing_id', type: 'int' })
   listingId: number;

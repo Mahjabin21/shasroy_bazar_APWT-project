@@ -16,8 +16,9 @@ export enum BundleStatus {
 @Index(['merchantId'])
 @Index(['bundleStatus'])
 export class ProductBundle {
-  @PrimaryGeneratedColumn('uuid', { name: 'bundle_id' })
-  bundleId: string;
+  
+  @PrimaryGeneratedColumn({ name: 'bundle_id', type: 'int' })
+  bundleId: number;
 
   @Column({ name: 'bundle_name', type: 'varchar', length: 150 })
   bundleName: string;
