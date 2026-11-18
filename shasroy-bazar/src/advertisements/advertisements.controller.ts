@@ -27,13 +27,13 @@ export class AdvertisementsController {
   @Roles('admin')
   async createAdvertisement(
     @Body() ad: CreateAdvertisementDto,
-  ): Promise<Advertisement> {
+  ) {
     return await this.advertisementsService.createAdvertisement(ad);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getAllAdvertisements(): Promise<Advertisement[]> {
+  async getAllAdvertisements(){
     return await this.advertisementsService.getAllAdvertisements();
   }
 
@@ -41,7 +41,7 @@ export class AdvertisementsController {
   @UseGuards(JwtAuthGuard)
   async getAdvertisementById(
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<Advertisement> {
+  ) {
     return await this.advertisementsService.getAdvertisementById(id);
   }
 
@@ -51,7 +51,7 @@ export class AdvertisementsController {
   async updateAdvertisement(
     @Param('id', ParseIntPipe) id: number,
     @Body() ad: UpdateAdvertisementDto,
-  ): Promise<string> {
+  ){
     return await this.advertisementsService.updateAdvertisement(id, ad);
   }
 
@@ -61,7 +61,7 @@ export class AdvertisementsController {
   async approveAdvertisement(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: any,
-  ): Promise<string> {
+  ){
     return await this.advertisementsService.approveAdvertisement(
       id,
       req.user.adminId,
@@ -73,7 +73,7 @@ export class AdvertisementsController {
   @Roles('admin')
   async deleteAdvertisement(
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<string> {
+  ){
     return await this.advertisementsService.deleteAdvertisement(id);
   }
 }
