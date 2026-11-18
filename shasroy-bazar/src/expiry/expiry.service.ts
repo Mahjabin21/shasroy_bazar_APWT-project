@@ -1,9 +1,19 @@
-import {Injectable,Logger,NotFoundException,BadRequestException,} from '@nestjs/common';
+
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import {Product,ProductListingStatus,} from '../products/entities/product.entity.js';
+import {
+  Product,
+  ProductListingStatus,
+} from '../products/entities/product.entity.js';
 
 import { ExpiryRemovalRecord } from './entities/expiry-removal-record.entity.js';
 import { ExpirySetting } from './entities/expiry-setting.entity.js';
@@ -15,10 +25,18 @@ import { UpdateExpiryThresholdDto } from './dto/update-expiry-threshold.dto.js';
 export class ExpiryService {
   private readonly logger = new Logger(ExpiryService.name);
 
-  constructor(@InjectRepository(Product) private readonly productRepository: Repository<Product>,
-  @InjectRepository(ExpiryRemovalRecord) private readonly removalRepository: Repository<ExpiryRemovalRecord>,
-  @InjectRepository(ExpirySetting) private readonly settingRepository: Repository<ExpirySetting>,
-  private readonly dataSource: DataSource, ) {}
+  constructor(
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+
+    @InjectRepository(ExpiryRemovalRecord)
+    private readonly removalRepository: Repository<ExpiryRemovalRecord>,
+
+    @InjectRepository(ExpirySetting)
+    private readonly settingRepository: Repository<ExpirySetting>,
+
+    private readonly dataSource: DataSource,
+  ) {}
 
   // GET OR CREATE THE GLOBAL EXPIRY SETTING
   async getExpirySetting() {
@@ -51,7 +69,6 @@ export class ExpiryService {
     }
 
     const setting = await this.getExpirySetting();
-
     setting.thresholdDays = dto.thresholdDays;
 
     return this.settingRepository.save(setting);
@@ -75,7 +92,9 @@ export class ExpiryService {
       expiry.getUTCDate(),
     );
 
-    return Math.ceil((expiryUtc - todayUtc) / (1000 * 60 * 60 * 24));
+    return Math.ceil(
+      (expiryUtc - todayUtc) / (1000 * 60 * 60 * 24),
+    );
   }
 
   // CHECK ALL ACTIVE PRODUCT LISTINGS
@@ -150,32 +169,37 @@ export class ExpiryService {
         return false;
       }
 
-      // Soft-remove the listing. Existing order records are not deleted.
+      // Soft-remove the listing.
       product.listingStatus = ProductListingStatus.REMOVED;
       await productRepository.save(product);
 
-     const existingRecord = await removalRepository.findOne({
-     where: {
-    product: { listingId: product.listingId },
-     },
-    });
+      const existingRecord = await removalRepository.findOne({
+        where: {
+          product: { listingId: product.listingId },
+        },
+      });
 
       if (!existingRecord) {
-       const record = removalRepository.create({
-       product,
-       recordedExpiryDate: product.expiryDate,
-       thresholdDays,
-   });
+        const record = removalRepository.create({
+          product,
+          recordedExpiryDate: product.expiryDate,
+          thresholdDays,
+        });
 
         await removalRepository.save(record);
 
-       const notification = notificationRepository.create({
-       merchantId: product.merchantId,
-       product,
-       title: 'Product listing removed',
-       message:`Your product "${product.productName}" was removed because ` +`its expiry date reached the ${thresholdDays}-day removal threshold. ` +`Recorded expiry date: ${product.expiryDate}.`,
-       isRead: false,
-    });
+        // Notify the merchant about the removed listing.
+        const notification = notificationRepository.create({
+          type: 'PRODUCT_EXPIRY',
+          merchantId: product.merchantId,
+          product,
+          title: 'Product listing removed',
+          message:
+            `Your product "${product.productName}" was removed because ` +
+            `its expiry date reached the ${thresholdDays}-day removal threshold. ` +
+            `Recorded expiry date: ${product.expiryDate}.`,
+          isRead: false,
+        });
 
         await notificationRepository.save(notification);
       }
@@ -201,11 +225,11 @@ export class ExpiryService {
   }
 
   // GET REMOVAL RECORDS FOR ONE LISTING
-    // GET REMOVAL RECORDS FOR ONE LISTING
   async findRemovalRecord(listingId: number) {
     const record = await this.removalRepository.findOne({
-      where: { product: { listingId },
-        },
+      where: {
+        product: { listingId },
+      },
       relations: {
         product: true,
       },

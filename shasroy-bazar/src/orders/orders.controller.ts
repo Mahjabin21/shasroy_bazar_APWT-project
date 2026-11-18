@@ -1,4 +1,3 @@
-
 import {
   Body,
   Controller,
@@ -10,82 +9,64 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OrdersService } from './orders.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
-
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
 
 @ApiTags('Orders')
+@ApiBearerAuth('JWT-auth')
 @Controller('orders')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OrdersController {
-  constructor(
-    private readonly ordersService: OrdersService,
-  ) {}
+  constructor(private readonly ordersService: OrdersService) {}
 
-  // Customer: Place a new order
+  // The customer is taken from the login token, never from the request body.
   @Post('place-order')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
-  @ApiOperation({ summary: 'Place an order' })
-  placeOrder(
-    @Req() req: any,
-    @Body() dto: CreateOrderDto,
-  ) {
-    return this.ordersService.placeOrder(
-      dto,
-      req.user.userId,
-    );
+  @ApiOperation({ summary: 'Place an order and reserve product stock (user)' })
+  placeOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
+    return this.ordersService.placeOrder(req.user.userId, dto);
   }
 
-  // Admin: Get all orders
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
+  @ApiOperation({ summary: 'List all orders (admin)' })
   getAllOrders() {
     return this.ordersService.getAllOrders();
   }
 
-  // Customer: Get their own orders
-  @Get('my-orders')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('my')
   @Roles('user')
+  @ApiOperation({ summary: 'List my orders (user)' })
   getMyOrders(@Req() req: any) {
-    return this.ordersService.getOrdersByUser(
-      req.user.userId,
-    );
+    return this.ordersService.getOrdersByUser(req.user.userId);
   }
 
-  // Admin: Update order status
-  @Patch('update-status/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('user/:userId')
   @Roles('admin')
+  @ApiOperation({ summary: 'List orders of one user (admin)' })
+  getOrdersByUser(@Param('userId', ParseIntPipe) userId: number) {
+    return this.ordersService.getOrdersByUser(userId);
+  }
+
+  @Patch('update-status/:id')
+  @Roles('admin')
+  @ApiOperation({ summary: 'Update order status (admin)' })
   updateOrderStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateOrderStatusDto,
   ) {
-    return this.ordersService.updateOrderStatus(
-      id,
-      dto,
-    );
+    return this.ordersService.updateOrderStatus(id, dto);
   }
 
-  // Customer: Get a specific order they own
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
-  getOrderById(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
-  ) {
-    return this.ordersService.getOrderByIdForUser(
-      id,
-      req.user.userId,
-    );
+  @Roles('user', 'admin')
+  @ApiOperation({ summary: 'Get one order (owner or admin)' })
+  getOrderById(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.ordersService.getOrderById(id, req.user);
   }
 }

@@ -5,9 +5,13 @@ import { OrdersService } from './orders.service.js';
 import { OrderEntity } from './entities/order.entity.js';
 import { OrderItemEntity } from './entities/order-item.entity.js';
 import { Product } from '../products/entities/product.entity.js';
+import { PurchaseLimitsModule } from '../purchase-limits/purchase-limits.module.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrderEntity, OrderItemEntity, Product])],
+  imports: [
+    TypeOrmModule.forFeature([OrderEntity, OrderItemEntity, Product]),
+    PurchaseLimitsModule,
+  ],
   controllers: [OrdersController],
   providers: [OrdersService],
   exports: [OrdersService],

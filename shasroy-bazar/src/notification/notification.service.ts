@@ -1,15 +1,11 @@
 
-
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
+import { CreateNotificationDto } from './dto/create-notification.dto.js';
 import { Notification } from './entities/notification.entity.js';
-import { Product } from '../products/entities/product.entity.js';
+
+import { User } from '../users/entities/user.entity.js';
 
 @Injectable()
 export class NotificationService {
@@ -18,43 +14,51 @@ export class NotificationService {
     private readonly notificationRepository: Repository<Notification>,
   ) {}
 
-  // CREATE A NOTIFICATION
-  async create(
-  merchantId: number,
-  product: Product,
-  title: string,
-  message: string,
-) {
-  const notification = this.notificationRepository.create({
-    merchantId,
-    product,
-    title,
-    message,
-    isRead: false,
-  });
+  async createNotification(dto: CreateNotificationDto) {
+    const notification = this.notificationRepository.create({
+      type: dto.type,
+      message: dto.message,
+      user: { userId: dto.userId } as User,
+      relatedOrderId: dto.relatedOrderId ?? null,
+    });
 
-  return this.notificationRepository.save(notification);
-}
-  // GET ALL NOTIFICATIONS FOR A MERCHANT
-  async findByMerchant(merchantId: number) {
+    return this.notificationRepository.save(notification);
+  }
+
+  async getUserNotifications(userId: number) {
     return this.notificationRepository.find({
-      where: { merchantId },
+      where: { user: { userId } },
       order: { createdAt: 'DESC' },
     });
   }
 
-  // MARK A NOTIFICATION AS READ
-  async markAsRead(notificationId: string, merchantId: number) {
+  async markAsRead(notificationId: number, userId: number) {
     const notification = await this.notificationRepository.findOne({
-      where: { notificationId, merchantId },
+      where: { notificationId, user: { userId } },
     });
 
     if (!notification) {
-      throw new NotFoundException('Notification not found.');
+      throw new NotFoundException('Notification not found');
     }
 
     notification.isRead = true;
-
     return this.notificationRepository.save(notification);
+  }
+
+  async markAllAsRead(userId: number) {
+    const notifications = await this.notificationRepository.find({
+      where: { user: { userId }, isRead: false },
+    });
+
+    for (const notification of notifications) {
+      notification.isRead = true;
+    }
+
+    await this.notificationRepository.save(notifications);
+
+    return {
+      message: 'All notifications marked as read',
+      updatedCount: notifications.length,
+    };
   }
 }
