@@ -11,6 +11,10 @@ import { AdministratorModule } from './administrator/administrator.module.js';
 import { NotificationModule } from './notification/notification.module.js';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { OrdersModule } from './orders/orders.module.js';
+import { PurchaseLimitsModule } from './purchase-limits/purchase-limits.module.js';
+import { RefundsModule } from './refunds/refunds.module.js';
+import { DeliveryModule } from './delivery/delivery.module.js';
 
 @Module({
   imports: [
@@ -30,7 +34,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }),
 
 
-    AuthModule, UsersModule, EkycModule, ServiceZonesModule, MerchantsModule, MerchantZonesModule, AdministratorModule, NotificationModule
+    AuthModule, UsersModule, EkycModule, ServiceZonesModule, MerchantsModule, MerchantZonesModule, AdministratorModule, NotificationModule, OrdersModule, PurchaseLimitsModule, RefundsModule, DeliveryModule
 ],
   controllers: [AppController],
   providers: [AppService],
