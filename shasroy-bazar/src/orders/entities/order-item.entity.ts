@@ -1,12 +1,4 @@
-
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  type Relation,
-} from 'typeorm';
+import {Entity,  PrimaryGeneratedColumn, Column,ManyToOne,JoinColumn,type Relation,} from 'typeorm';
 
 import { OrderEntity } from './order.entity.js';
 
