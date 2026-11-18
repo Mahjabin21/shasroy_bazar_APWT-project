@@ -1,4 +1,5 @@
 
+
 import {
   Entity,
   PrimaryColumn,
@@ -16,8 +17,8 @@ export class BundleItem {
   @PrimaryColumn({ name: 'bundle_id', type: 'uuid' })
   bundleId: string;
 
-  @PrimaryColumn({ name: 'listing_id', type: 'uuid' })
-  listingId: string;
+  @PrimaryColumn({ name: 'listing_id', type: 'int' })
+  listingId: number;
 
   @ManyToOne(
     () => ProductBundle,

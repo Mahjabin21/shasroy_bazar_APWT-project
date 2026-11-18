@@ -3,7 +3,6 @@ import {
   IsString,
   IsNotEmpty,
   MaxLength,
-  IsUUID,
 } from 'class-validator';
 
 export class CreateBundleDto {
@@ -11,7 +10,4 @@ export class CreateBundleDto {
   @IsNotEmpty()
   @MaxLength(150)
   bundleName: string;
-
-  @IsUUID()
-  merchantId: string;
 }

@@ -1,4 +1,5 @@
 
+
 import {Injectable,NotFoundException,BadRequestException,ForbiddenException,} from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
@@ -35,7 +36,7 @@ export class BundlesService {
   private async getMerchantBundle(
     manager: EntityManager,
     bundleId: string,
-    merchantId: string,
+    merchantId: number,
   ) {
     const bundle = await manager
       .getRepository(ProductBundle)
@@ -102,10 +103,10 @@ export class BundlesService {
   }
 
   // POST /bundles
-  async create(createBundleDto: CreateBundleDto) {
+  async create(merchantId: number, createBundleDto: CreateBundleDto) {
     const bundle = this.bundleRepository.create({
       bundleName: createBundleDto.bundleName,
-      merchantId: createBundleDto.merchantId,
+      merchantId,
       bundlePrice: '0.00',
       bundleStatus: BundleStatus.ACTIVE,
     });
@@ -114,7 +115,7 @@ export class BundlesService {
   }
 
   // GET /bundles/merchant/:merchantId
-  async findByMerchant(merchantId: string) {
+  async findByMerchant(merchantId: number) {
     return this.bundleRepository.find({
       where: { merchantId },
       relations: {
@@ -129,7 +130,7 @@ export class BundlesService {
   }
 
   // GET /bundles/merchant/:merchantId/:bundleId
-  async findOne(bundleId: string, merchantId: string) {
+  async findOne(bundleId: string, merchantId: number) {
     const bundle = await this.bundleRepository.findOne({
       where: {
         bundleId,
@@ -152,7 +153,7 @@ export class BundlesService {
   // PATCH /bundles/merchant/:merchantId/:bundleId
   async update(
     bundleId: string,
-    merchantId: string,
+    merchantId: number,
     updateBundleDto: UpdateBundleDto,
   ) {
     const bundle = await this.bundleRepository.findOne({
@@ -178,7 +179,7 @@ export class BundlesService {
   }
 
   // DELETE /bundles/merchant/:merchantId/:bundleId
-  async remove(bundleId: string, merchantId: string) {
+  async remove(bundleId: string, merchantId: number) {
     const bundle = await this.bundleRepository.findOne({
       where: {
         bundleId,
@@ -200,7 +201,7 @@ export class BundlesService {
   // POST /bundles/merchant/:merchantId/:bundleId/items
   async addItem(
     bundleId: string,
-    merchantId: string,
+    merchantId: number,
     addBundleItemDto: AddBundleItemDto,
   ) {
     return this.dataSource.transaction(async (manager) => {
@@ -310,8 +311,8 @@ export class BundlesService {
   // PATCH /bundles/merchant/:merchantId/:bundleId/items/:listingId
   async updateItem(
     bundleId: string,
-    merchantId: string,
-    listingId: string,
+    merchantId: number,
+    listingId: number,
     updateBundleItemDto: UpdateBundleItemDto,
   ) {
     return this.dataSource.transaction(async (manager) => {
@@ -377,8 +378,8 @@ export class BundlesService {
   // DELETE /bundles/merchant/:merchantId/:bundleId/items/:listingId
   async removeItem(
     bundleId: string,
-    merchantId: string,
-    listingId: string,
+    merchantId: number,
+    listingId: number,
   ) {
     return this.dataSource.transaction(async (manager) => {
       const bundle = await this.getMerchantBundle(

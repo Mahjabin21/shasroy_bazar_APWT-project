@@ -1,5 +1,9 @@
 
-import {Entity, PrimaryGeneratedColumn,  Column,CreateDateColumn,UpdateDateColumn,OneToMany,Index,} from 'typeorm';
+
+import {Entity, PrimaryGeneratedColumn,  Column,CreateDateColumn,UpdateDateColumn,OneToMany,ManyToOne,JoinColumn,Index,} from 'typeorm';
+import type { Relation } from 'typeorm';
+
+import { Merchant } from '../../merchants/entities/merchant.entity.js';
 
 import { BundleItem } from './bundle-item.entity.js';
 
@@ -34,10 +38,18 @@ export class ProductBundle {
   })
   bundleStatus: BundleStatus;
 
-  // Merchant entity is not implemented yet.
-  // We will add its foreign-key relationship later.
-  @Column({ name: 'merchant_id', type: 'uuid' })
-  merchantId: string;
+  @Column({ name: 'merchant_id', type: 'int' })
+  merchantId: number;
+
+  @ManyToOne(() => Merchant, {
+    nullable: false,
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({
+    name: 'merchant_id',
+    referencedColumnName: 'merchantId',
+  })
+  merchant: Relation<Merchant>;
 
  
   @OneToMany(
