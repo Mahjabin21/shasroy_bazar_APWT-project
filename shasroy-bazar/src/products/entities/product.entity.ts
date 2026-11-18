@@ -1,17 +1,8 @@
-
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  Index,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity,PrimaryGeneratedColumn,Column,CreateDateColumn,UpdateDateColumn,Index,ManyToOne,JoinColumn, ManyToMany, JoinTable,} from 'typeorm';
 import type { Relation } from 'typeorm';
 
 import { Merchant } from '../../merchants/entities/merchant.entity.js';
+import { ServiceZone } from '../../service-zones/entities/service-zone.entity.js';
 
 export enum ProductListingStatus {
   ACTIVE = 'ACTIVE',
@@ -22,6 +13,8 @@ export enum ProductListingStatus {
 @Index(['merchantId'])
 @Index(['listingStatus'])
 @Index(['expiryDate'])
+
+
 export class Product {
   @PrimaryGeneratedColumn({ name: 'listing_id' })
   listingId: number;
@@ -88,11 +81,26 @@ export class Product {
     nullable: false,
     onDelete: 'RESTRICT',
   })
+
   @JoinColumn({
     name: 'merchant_id',
     referencedColumnName: 'merchantId',
   })
   merchant: Relation<Merchant>;
+
+  @ManyToMany(() => ServiceZone)
+  @JoinTable({
+    name: 'listing_zone',
+    joinColumn: {
+      name: 'listing_id',
+      referencedColumnName: 'listingId',
+    },
+    inverseJoinColumn: {
+      name: 'zone_id',
+      referencedColumnName: 'zoneId',
+    },
+  })
+  zones: Relation<ServiceZone[]>;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
