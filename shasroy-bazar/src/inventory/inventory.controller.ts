@@ -6,9 +6,9 @@ import { Request } from 'express';
 import { InventoryService } from './inventory.service.js';
 import { AdjustStockDto } from './dto/adjust-stock.dto.js';
 
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
-import { RolesGuard } from '../auth/guards/roles.guard.js';
-import { Roles } from '../auth/decorators/roles.decorator.js';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../common/guards/roles.guard.js';
+import { Roles } from '../common/decorators/roles.decorator.js';
 
 interface AuthenticatedRequest extends Request {
   user: {
