@@ -53,11 +53,12 @@ export class OrganizationsService {
     }
   }
 
-  async verifyOrganization(id: number): Promise<string> {
+    async verifyOrganization(id: number, adminId: number): Promise<string> {
     const result = (
       await this.orgRepo.update(id, {
         organization_status: 'verified',
         verified_at: new Date(),
+        verifiedByAdmin: { adminId: adminId },
       })
     ).affected;
     if (result != undefined && result > 0) {
