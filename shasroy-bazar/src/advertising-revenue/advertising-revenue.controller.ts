@@ -7,11 +7,15 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { AdvertisingRevenueService } from './advertising-revenue.service.js';
 import { CreateAdvertisingRevenueDto } from './dto/create-advertising-revenue.dto.js';
 import { UpdateAdvertisingRevenueDto } from './dto/update-advertising-revenue.dto.js';
 import { AdvertisingRevenueRecord } from './entities/advertising-revenue-record.entity.js';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../common/guards/roles.guard.js';
+import { Roles } from '../common/decorators/roles.decorator.js';
 
 @Controller('advertising-revenue')
 export class AdvertisingRevenueController {
@@ -20,6 +24,8 @@ export class AdvertisingRevenueController {
   ) {}
 
   @Post('create-revenue')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async createRevenue(
     @Body() revenue: CreateAdvertisingRevenueDto,
   ): Promise<AdvertisingRevenueRecord> {
@@ -27,11 +33,15 @@ export class AdvertisingRevenueController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async getAllRevenues(): Promise<AdvertisingRevenueRecord[]> {
     return await this.advertisingRevenueService.getAllRevenues();
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async getRevenueById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<AdvertisingRevenueRecord> {
@@ -39,6 +49,8 @@ export class AdvertisingRevenueController {
   }
 
   @Patch('update-revenue/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async updateRevenue(
     @Param('id', ParseIntPipe) id: number,
     @Body() revenue: UpdateAdvertisingRevenueDto,
@@ -47,6 +59,8 @@ export class AdvertisingRevenueController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async deleteRevenue(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<string> {
