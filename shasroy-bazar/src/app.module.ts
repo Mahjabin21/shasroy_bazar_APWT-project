@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module,MiddlewareConsumer,NestModule } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -11,6 +11,19 @@ import { AdministratorModule } from './administrator/administrator.module.js';
 import { NotificationModule } from './notification/notification.module.js';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerMiddleware } from './common/middleware/logger.middleware.js';
+import { ExpiryModule } from './expiry/expiry.module.js';
+import { ProductsModule } from './products/products.module.js';
+import { OrdersModule } from './orders/orders.module.js';
+import { DeliveryModule } from './delivery/delivery.module.js';
+import { PurchaseLimitsModule } from './purchase-limits/purchase-limits.module.js';
+import { BundlesModule } from './bundles/bundles.module.js';
+import { PaymentsModule } from './payment/payment.module.js';
+import { OrganizationsModule } from './organizations/organizations.module.js';
+import { AdvertisementsModule } from './advertisements/advertisements.module.js';
+import { AdvertisingRevenueModule } from './advertising-revenue/advertising-revenue.module.js';
+import { DonationsModule } from './donations/donations.module.js';
+import { InventoryModule } from './inventory/inventory.module.js';
 
 @Module({
   imports: [
@@ -30,9 +43,34 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }),
 
 
-    AuthModule, UsersModule, EkycModule, ServiceZonesModule, MerchantsModule, MerchantZonesModule, AdministratorModule, NotificationModule
+    AuthModule, 
+    UsersModule, 
+    EkycModule, 
+    ServiceZonesModule, 
+    MerchantsModule, 
+    MerchantZonesModule, 
+    AdministratorModule, 
+    NotificationModule, 
+    ExpiryModule, 
+    ProductsModule, 
+    OrdersModule, 
+    DeliveryModule, 
+    PurchaseLimitsModule, 
+    BundlesModule, 
+    PaymentsModule, 
+    OrganizationsModule, 
+    AdvertisementsModule,
+    AdvertisingRevenueModule,
+    DonationsModule,
+    InventoryModule
+
 ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
+
