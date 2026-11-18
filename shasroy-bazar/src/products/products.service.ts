@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NotFoundException,
@@ -24,7 +23,7 @@ export class ProductsService {
   ) {}
 
   // CREATE PRODUCT
-  async create(createProductDto: CreateProductDto) {
+  async create(merchantId: number, createProductDto: CreateProductDto) {
     const expiry = new Date(createProductDto.expiryDate);
 
     if (Number.isNaN(expiry.getTime())) {
@@ -57,7 +56,7 @@ export class ProductsService {
       productPhotoUrl: createProductDto.productPhotoUrl ?? null,
       expiryDate: createProductDto.expiryDate,
       expiryPhotoUrl: createProductDto.expiryPhotoUrl,
-      merchantId: createProductDto.merchantId,
+      merchantId,
       merchantOriginalPrice: createProductDto.merchantOriginalPrice,
       systemPrice,
       listingStatus: ProductListingStatus.ACTIVE,
@@ -79,7 +78,7 @@ export class ProductsService {
   }
 
   // GET PRODUCTS OF A PARTICULAR MERCHANT
-  async findByMerchant(merchantId: string) {
+  async findByMerchant(merchantId: number) {
     return this.productRepository.find({
       where: { merchantId },
       order: {
@@ -89,7 +88,7 @@ export class ProductsService {
   }
 
   // GET ONE PRODUCT
-  async findOne(listingId: string) {
+  async findOne(listingId: number) {
     const product = await this.productRepository.findOne({
       where: { listingId },
     });
@@ -103,8 +102,8 @@ export class ProductsService {
 
   // UPDATE PRODUCT
   async update(
-    listingId: string,
-    merchantId: string,
+    listingId: number,
+    merchantId: number,
     updateProductDto: UpdateProductDto,
   ) {
     const product = await this.productRepository.findOne({
@@ -168,7 +167,7 @@ export class ProductsService {
   }
 
   // DELETE PRODUCT (SOFT REMOVAL)
-  async remove(listingId: string, merchantId: string) {
+  async remove(listingId: number, merchantId: number) {
     const product = await this.productRepository.findOne({
       where: { listingId, merchantId },
     });

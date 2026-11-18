@@ -1,11 +1,11 @@
 
+
 import {
   IsString,
   IsNotEmpty,
   IsOptional,
   IsNumber,
   IsPositive,
-  IsUUID,
   IsDateString,
   MaxLength,
   MinLength,
@@ -47,9 +47,6 @@ export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   expiryPhotoUrl: string;
-
-  @IsUUID()
-  merchantId: string;
 
    @Type(() => Number)
    @IsNumber({ maxDecimalPlaces: 2 })

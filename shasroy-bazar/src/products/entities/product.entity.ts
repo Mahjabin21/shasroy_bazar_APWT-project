@@ -6,7 +6,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import type { Relation } from 'typeorm';
+
+import { Merchant } from '../../merchants/entities/merchant.entity.js';
 
 export enum ProductListingStatus {
   ACTIVE = 'ACTIVE',
@@ -18,8 +23,8 @@ export enum ProductListingStatus {
 @Index(['listingStatus'])
 @Index(['expiryDate'])
 export class Product {
-  @PrimaryGeneratedColumn('uuid', { name: 'listing_id' })
-  listingId: string;
+  @PrimaryGeneratedColumn({ name: 'listing_id' })
+  listingId: number;
 
   @Column({ name: 'product_name', type: 'varchar', length: 150 })
   productName: string;
@@ -76,8 +81,18 @@ export class Product {
   })
   listingStatus: ProductListingStatus;
 
-  @Column({ name: 'merchant_id', type: 'uuid' })
-  merchantId: string;
+  @Column({ name: 'merchant_id', type: 'int' })
+  merchantId: number;
+
+  @ManyToOne(() => Merchant, {
+    nullable: false,
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({
+    name: 'merchant_id',
+    referencedColumnName: 'merchantId',
+  })
+  merchant: Relation<Merchant>;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
