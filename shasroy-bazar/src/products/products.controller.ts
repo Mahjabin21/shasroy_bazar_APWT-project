@@ -1,4 +1,5 @@
 
+
 import {
   Controller,
   Get,
@@ -11,7 +12,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+
+import { ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 
 import { ProductsService } from './products.service.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
@@ -30,6 +32,21 @@ export class ProductsController {
   ) {}
 
   // POST /products
+  @ApiBody({
+    schema: {
+      example: {
+        productName: 'Fresh Mango',
+        category: 'Fruits',
+        description: 'Fresh seasonal mangoes',
+        quantityAvailable: 50,
+        unit: 'kg',
+        productPhotoUrl: 'https://example.com/test/mango.jpg',
+        expiryDate: '2026-12-15',
+        expiryPhotoUrl: 'https://example.com/test/mango-expiry.jpg',
+        merchantOriginalPrice: 120,
+      },
+    },
+  })
   @Post()
   @Roles('merchant')
   create(
@@ -57,6 +74,17 @@ export class ProductsController {
   }
 
   // PATCH /products/:listingId
+  @ApiBody({
+    schema: {
+      example: {
+        description: 'Updated product description',
+        quantityAvailable: 45,
+        productPhotoUrl: 'https://example.com/test/mango-new.jpg',
+        expiryDate: '2026-12-20',
+        expiryPhotoUrl: 'https://example.com/test/mango-expiry-new.jpg',
+      },
+    },
+  })
   @Patch(':listingId')
   @Roles('merchant')
   update(

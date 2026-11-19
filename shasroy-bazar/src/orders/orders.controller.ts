@@ -1,3 +1,4 @@
+
 import {
   Body,
   Controller,
@@ -9,7 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OrdersService } from './orders.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
@@ -25,6 +26,22 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   // The customer is taken from the login token, never from the request body.
+  @ApiBody({
+    schema: {
+      example: {
+        zone_id: 1,
+        fulfillment_type: 'delivery',
+        items: [
+          {
+            listing_id: 1,
+            quantity: 2,
+          },
+        ],
+        delivery_address: 'House 10, Road 2, Dhaka',
+        recipient_phone: '01712345678',
+      },
+    },
+  })
   @Post('place-order')
   @Roles('user')
   @ApiOperation({ summary: 'Place an order and reserve product stock (user)' })
@@ -53,6 +70,13 @@ export class OrdersController {
     return this.ordersService.getOrdersByUser(userId);
   }
 
+  @ApiBody({
+    schema: {
+      example: {
+        order_status: 'Confirmed',
+      },
+    },
+  })
   @Patch('update-status/:id')
   @Roles('admin')
   @ApiOperation({ summary: 'Update order status (admin)' })

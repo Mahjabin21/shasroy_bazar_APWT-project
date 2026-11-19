@@ -1,4 +1,5 @@
 
+
 import {
   Controller,
   Get,
@@ -7,12 +8,11 @@ import {
   Param,
   Patch,
   Delete,
-
   ParseIntPipe,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 
 import { BundlesService } from './bundles.service.js';
 
@@ -35,6 +35,13 @@ export class BundlesController {
   ) {}
 
   // POST /bundles
+  @ApiBody({
+    schema: {
+      example: {
+        bundleName: 'Family Grocery Bundle',
+      },
+    },
+  })
   @Post()
   create(
     @Body() createBundleDto: CreateBundleDto,
@@ -62,6 +69,14 @@ export class BundlesController {
   }
 
   // PATCH /bundles/:bundleId
+  @ApiBody({
+    schema: {
+      example: {
+        bundleName: 'Family Saver Bundle',
+        bundleStatus: 'ACTIVE',
+      },
+    },
+  })
   @Patch(':bundleId')
   update(
     @Param('bundleId', ParseIntPipe) bundleId: number,
@@ -85,6 +100,14 @@ export class BundlesController {
   }
 
   // POST /bundles/:bundleId/items
+  @ApiBody({
+    schema: {
+      example: {
+        listingId: 1,
+        quantity: 2,
+      },
+    },
+  })
   @Post(':bundleId/items')
   addItem(
     @Param('bundleId', ParseIntPipe) bundleId: number,
@@ -99,6 +122,13 @@ export class BundlesController {
   }
 
   // PATCH /bundles/:bundleId/items/:listingId
+  @ApiBody({
+    schema: {
+      example: {
+        quantity: 3,
+      },
+    },
+  })
   @Patch(':bundleId/items/:listingId')
   updateItem(
     @Param('bundleId', ParseIntPipe) bundleId: number,

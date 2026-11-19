@@ -1,4 +1,5 @@
 
+
 import {
   Controller,
   Post,
@@ -10,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 
 import { PaymentsService } from './payment.service.js';
@@ -38,6 +39,15 @@ export class PaymentsController {
   ) {}
 
   // Simulate payment for an order
+  @ApiBody({
+    schema: {
+      example: {
+        payment_method: 'bKash',
+        simulation_result: 'success',
+        idempotency_ref: '550e8400-e29b-41d4-a716-446655440000',
+      },
+    },
+  })
   @Post('orders/:orderId/simulate')
   simulatePayment(
     @Param('orderId', ParseIntPipe) orderId: number,

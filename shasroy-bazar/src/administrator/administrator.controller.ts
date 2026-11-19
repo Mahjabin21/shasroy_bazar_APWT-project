@@ -9,7 +9,7 @@ import {
   Request as NestRequest,
 } from '@nestjs/common';
 
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import type { Request } from 'express';
 
 import { AdministratorService } from './administrator.service.js';
@@ -69,6 +69,13 @@ export class AdministratorController {
   }
 
   // REJECT MERCHANT APPLICATION
+  @ApiBody({
+  schema: {
+    example: {
+      reason: 'Submitted documents are incomplete.',
+    },
+  },
+})
   @Patch('merchants/:id/reject')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -110,6 +117,13 @@ export class AdministratorController {
   }
 
   // APPROVE OR REJECT AN eKYC APPLICATION
+  @ApiBody({
+  schema: {
+    example: {
+      status: 'verified',
+    },
+  },
+})
   @Patch('ekyc/:id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')

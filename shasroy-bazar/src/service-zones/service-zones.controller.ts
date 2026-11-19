@@ -1,3 +1,4 @@
+
 import {
   Controller,
   Get,
@@ -9,7 +10,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { ServiceZonesService } from './service-zones.service.js';
 import { CreateServiceZoneDto } from './dto/create-service-zone.dto.js';
 import { UpdateServiceZoneDto } from './dto/update-service-zone.dto.js';
@@ -27,6 +29,15 @@ export class ServiceZonesController {
   ) {}
 
   // Create a new service zone
+  @ApiBody({
+    schema: {
+      example: {
+        zoneName: 'Dhanmondi',
+        boundaryDefinition: 'Dhanmondi service boundary',
+        zoneStatus: 'active',
+      },
+    },
+  })
   @Post()
   create(
     @Body() dto: CreateServiceZoneDto,
@@ -51,6 +62,15 @@ export class ServiceZonesController {
   }
 
   // Update zone information
+  @ApiBody({
+    schema: {
+      example: {
+        zoneName: 'Dhanmondi Updated',
+        boundaryDefinition: 'Updated service boundary',
+        zoneStatus: 'active',
+      },
+    },
+  })
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -60,6 +80,13 @@ export class ServiceZonesController {
   }
 
   // Activate or deactivate a zone
+  @ApiBody({
+    schema: {
+      example: {
+        zoneStatus: 'inactive',
+      },
+    },
+  })
   @Patch(':id/status')
   updateStatus(
     @Param('id', ParseIntPipe) id: number,

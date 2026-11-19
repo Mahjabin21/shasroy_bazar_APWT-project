@@ -1,4 +1,7 @@
 
+
+import { ApiBody } from '@nestjs/swagger';
+
 import {
   Body,
   Controller,
@@ -23,6 +26,15 @@ export class PurchaseLimitsController {
   ) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBody({
+    schema: {
+      example: {
+        listing_id: 1,
+        max_quantity: 3,
+        period_type: 'daily',
+      },
+    },
+  })
   @Post('set-limit')
   async setLimit(
     @Body() dto: SetPurchaseLimitDto,

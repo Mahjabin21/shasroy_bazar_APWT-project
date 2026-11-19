@@ -1,6 +1,22 @@
 
-import { Body,Controller, Get,Param,ParseIntPipe,Post,Req,UseGuards,} from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+
+import {
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+
 import { Request } from 'express';
 
 import { InventoryService } from './inventory.service.js';
@@ -19,24 +35,47 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+@ApiBearerAuth('JWT-auth')
 @ApiTags('Inventory')
 @Controller('inventory')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('merchant')
 export class InventoryController {
-  constructor(private readonly inventory: InventoryService) {}
+  constructor(
+    private readonly inventory: InventoryService,
+  ) {}
 
+  // GET /inventory/:listingId
+  // Get current stock for a merchant product listing
   @Get(':listingId')
-  @ApiOperation({ summary: 'Get current stock for a merchant product listing' })
+  @ApiOperation({
+    summary: 'Get current stock for a merchant product listing',
+  })
   getStock(
     @Param('listingId', ParseIntPipe) listingId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.inventory.getStock(listingId, req.user.merchantId);
+    return this.inventory.getStock(
+      listingId,
+      req.user.merchantId,
+    );
   }
 
+  // POST /inventory/:listingId/adjust
+  // Adjust stock for a merchant product listing
+  @ApiBody({
+    schema: {
+      example: {
+        quantity: 10,
+        reason: 'RESTOCK',
+        note: 'Weekly supplier delivery',
+      },
+    },
+  })
   @Post(':listingId/adjust')
-  @ApiOperation({ summary: 'Adjust stock for a merchant product listing' })
+  @ApiOperation({
+    summary: 'Adjust stock for a merchant product listing',
+  })
   adjustStock(
     @Param('listingId', ParseIntPipe) listingId: number,
     @Req() req: AuthenticatedRequest,
@@ -49,12 +88,19 @@ export class InventoryController {
     );
   }
 
+  // GET /inventory/:listingId/history
+  // Get stock adjustment history for a merchant listing
   @Get(':listingId/history')
-  @ApiOperation({ summary: 'Get stock adjustment history for a merchant listing' })
+  @ApiOperation({
+    summary: 'Get stock adjustment history for a merchant listing',
+  })
   getHistory(
     @Param('listingId', ParseIntPipe) listingId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.inventory.getHistory(listingId, req.user.merchantId);
+    return this.inventory.getHistory(
+      listingId,
+      req.user.merchantId,
+    );
   }
 }

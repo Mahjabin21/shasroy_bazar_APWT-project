@@ -1,3 +1,5 @@
+
+import { ApiBody } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -22,6 +24,15 @@ import { Roles } from '../common/decorators/roles.decorator.js';
 export class DonationsController {
   constructor(private readonly donationsService: DonationsService) {}
 
+  @ApiBody({
+    schema: {
+      example: {
+        listing_id: 1,
+        zone_id: 1,
+        quantity: 2,
+      },
+    },
+  })
   @Post('user-donate')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
@@ -32,6 +43,15 @@ export class DonationsController {
     return await this.donationsService.userDonation(donation, req.user.userId);
   }
 
+  @ApiBody({
+    schema: {
+      example: {
+        listing_id: 1,
+        zone_id: 1,
+        quantity: 5,
+      },
+    },
+  })
   @Post('merchant-donate')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('merchant')
@@ -72,6 +92,13 @@ export class DonationsController {
     return await this.donationsService.getDonationById(id);
   }
 
+  @ApiBody({
+    schema: {
+      example: {
+        org_id: 1,
+      },
+    },
+  })
   @Patch('allocate/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -82,6 +109,13 @@ export class DonationsController {
     return await this.donationsService.allocateDonation(id, data);
   }
 
+  @ApiBody({
+    schema: {
+      example: {
+        rejection_reason: 'Donation details need correction.',
+      },
+    },
+  })
   @Patch('reject/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')

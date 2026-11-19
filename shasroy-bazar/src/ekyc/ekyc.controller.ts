@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Request as NestRequest, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { EkycService } from './ekyc.service.js';
 import { SubmitEkycDto } from './dto/submit-ekyc.dto.js';
@@ -19,6 +19,17 @@ export class EkycController {
   constructor(private readonly ekycService: EkycService) {}
 
   // Submit eKYC (regular users only)
+  @ApiBody({
+  schema: {
+    example: {
+      nidNumber: '1234567890',
+      nidFrontUrl: 'https://example.com/test/nid-front.jpg',
+      nidBackUrl: 'https://example.com/test/nid-back.jpg',
+      selfieUrl: 'https://example.com/test/selfie.jpg',
+      consent: true,
+    },
+  },
+})
   @Post('submit')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')

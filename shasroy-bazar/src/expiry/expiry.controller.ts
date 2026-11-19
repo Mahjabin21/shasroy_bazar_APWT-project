@@ -1,3 +1,4 @@
+
 import {
   Controller,
   Get,
@@ -8,7 +9,7 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 
 import { ExpiryService } from './expiry.service.js';
 import { UpdateExpiryThresholdDto } from './dto/update-expiry-threshold.dto.js';
@@ -31,6 +32,13 @@ export class ExpiryController {
   }
 
   // PATCH /expiry/settings
+  @ApiBody({
+    schema: {
+      example: {
+        thresholdDays: 7,
+      },
+    },
+  })
   @Patch('settings')
   updateThreshold(@Body() dto: UpdateExpiryThresholdDto) {
     return this.expiryService.updateExpiryThreshold(dto);

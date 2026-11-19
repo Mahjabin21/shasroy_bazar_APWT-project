@@ -1,3 +1,5 @@
+
+import { ApiBody } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -22,6 +24,15 @@ import { Roles } from '../common/decorators/roles.decorator.js';
 export class OrganizationsController {
   constructor(private readonly organizationsService: OrganizationsService) {}
 
+  @ApiBody({
+    schema: {
+      example: {
+        org_name: 'Food Aid Foundation',
+        contact_person: 'Karim Ahmed',
+        contact_phone: '01712345678',
+      },
+    },
+  })
   @Post('create-organization')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -45,6 +56,15 @@ export class OrganizationsController {
     return await this.organizationsService.getOrganizationById(id);
   }
 
+  @ApiBody({
+    schema: {
+      example: {
+        org_name: 'Food Aid Foundation Updated',
+        contact_person: 'Karim Ahmed',
+        contact_phone: '01712345678',
+      },
+    },
+  })
   @Patch('update-organization/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')

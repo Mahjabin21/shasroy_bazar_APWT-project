@@ -1,3 +1,5 @@
+
+import { ApiBody } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -22,6 +24,18 @@ import { Roles } from '../common/decorators/roles.decorator.js';
 export class AdvertisementsController {
   constructor(private readonly advertisementsService: AdvertisementsService) {}
 
+  @ApiBody({
+    schema: {
+      example: {
+        campaign_name: 'Winter Food Campaign',
+        content_url: 'https://example.com/test/campaign.jpg',
+        start_date: '2026-11-20',
+        end_date: '2026-12-20',
+        budget: 5000,
+        org_id: 1,
+      },
+    },
+  })
   @Post('create-advertisement')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -45,6 +59,18 @@ export class AdvertisementsController {
     return await this.advertisementsService.getAdvertisementById(id);
   }
 
+  @ApiBody({
+    schema: {
+      example: {
+        campaign_name: 'Winter Food Campaign Updated',
+        content_url: 'https://example.com/test/campaign-new.jpg',
+        start_date: '2026-11-21',
+        end_date: '2026-12-21',
+        budget: 5500,
+        org_id: 1,
+      },
+    },
+  })
   @Patch('update-advertisement/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')

@@ -1,3 +1,5 @@
+
+import { ApiBody } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -19,6 +21,15 @@ import { RolesGuard } from '../common/guards/roles.guard.js';
 export class RefundsController {
   constructor(private readonly refundsService: RefundsService) {}
 
+  @ApiBody({
+    schema: {
+      example: {
+        order_id: 1,
+        user_id: 1,
+        reason: 'Order was not delivered as expected.',
+      },
+    },
+  })
   @Post('request-refund')
   async requestRefund(@Body() dto: CreateRefundDto): Promise<RefundEntity> {
     return await this.refundsService.requestRefund(dto);
@@ -45,6 +56,13 @@ export class RefundsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBody({
+    schema: {
+      example: {
+        admin_note: 'Refund reviewed and approved.',
+      },
+    },
+  })
   @Patch('approve/:id')
   async approveRefund(
     @Param('id', ParseIntPipe) id: number,
@@ -54,6 +72,13 @@ export class RefundsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBody({
+    schema: {
+      example: {
+        admin_note: 'Refund request does not meet the policy requirements.',
+      },
+    },
+  })
   @Patch('reject/:id')
   async rejectRefund(
     @Param('id', ParseIntPipe) id: number,
@@ -63,6 +88,13 @@ export class RefundsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBody({
+    schema: {
+      example: {
+        admin_note: 'Refund has been processed successfully.',
+      },
+    },
+  })
   @Patch('complete/:id')
   async completeRefund(
     @Param('id', ParseIntPipe) id: number,

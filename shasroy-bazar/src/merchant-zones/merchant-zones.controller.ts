@@ -8,7 +8,7 @@ import {
   ParseIntPipe,
   Delete,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 
 import { MerchantZonesService } from './merchant-zones.service.js';
 import { AssignMerchantZoneDto } from './dto/assign-merchant-zone.dto.js';
@@ -27,11 +27,20 @@ export class MerchantZonesController {
   ) {}
 
   // Assign a service zone to a merchant
+    // Assign a service zone to a merchant
+  @ApiBody({
+    schema: {
+      example: {
+        merchantId: 1,
+        zoneId: 1,
+      },
+    },
+  })
   @Post('assign')
   assignZone(@Body() dto: AssignMerchantZoneDto) {
     return this.merchantZonesService.assignZone(dto);
   }
-
+  
   // Get all zones assigned to a merchant
   @Get('merchant/:merchantId')
   getMerchantZones(

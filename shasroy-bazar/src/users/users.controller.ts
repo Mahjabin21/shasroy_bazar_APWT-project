@@ -4,7 +4,7 @@ import type { Request } from 'express';
 import { SelectZoneDto } from './dto/select-zone.dto.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import {
   Controller,
   Get,
@@ -45,6 +45,13 @@ export class UsersController {
     return this.usersService.getActiveZones();
   }
 
+  @ApiBody({
+  schema: {
+    example: {
+      zoneId: 1,
+    },
+  },
+})
   @Patch('select-zone')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')

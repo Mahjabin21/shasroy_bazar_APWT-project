@@ -6,7 +6,7 @@ import {
   UseGuards,
   Request as NestRequest,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 
 import type { Request } from 'express';
 
@@ -33,6 +33,18 @@ export class MerchantsController {
   ) {}
 
   // Merchant registration endpoint
+
+  @ApiBody({
+  schema: {
+    example: {
+      businessName: 'Fresh Farm Store',
+      businessCategory: 'Grocery',
+      contactPerson: 'Rahim Ahmed',
+      contactPhone: '01712345678',
+      tradeLicenseRef: 'TL-2026-001',
+    },
+  },
+})
   @Post('register')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
