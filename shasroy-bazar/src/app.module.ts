@@ -26,6 +26,9 @@ import { InventoryModule } from './inventory/inventory.module.js';
 import { PurchaseLimitsModule } from './purchase-limits/purchase-limits.module.js';
 import { RefundsModule } from './refunds/refunds.module.js';
 import { DeliveryModule } from './delivery/delivery.module.js';
+import { OrganizationsModule } from './organizations/organizations.module.js';
+import { AdvertisementsModule } from './advertisements/advertisements.module.js';
+import { DonationsModule } from './donations/donations.module.js';
 
 @Module({
   imports: [
@@ -41,7 +44,7 @@ import { DeliveryModule } from './delivery/delivery.module.js';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       autoLoadEntities: true,
-      synchronize: false,
+      synchronize: true,
     }),
 
     AuthModule,
@@ -63,6 +66,9 @@ import { DeliveryModule } from './delivery/delivery.module.js';
     PurchaseLimitsModule,
     RefundsModule,
     DeliveryModule,
+    OrganizationsModule,
+    AdvertisementsModule,
+    DonationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
