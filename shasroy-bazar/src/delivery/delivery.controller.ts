@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
 import {
   Body,
   Controller,
@@ -23,7 +28,10 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 
 @Controller('delivery')
+<<<<<<< HEAD
 @ApiBearerAuth('JWT-auth')
+=======
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
 export class DeliveryController {
   constructor(
     private readonly deliveryService: DeliveryService,

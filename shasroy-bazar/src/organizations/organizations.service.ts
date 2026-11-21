@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 import {
   Injectable,
@@ -12,6 +13,16 @@ import { Organization } from './entities/organization.entity.js';
 import { Administrator } from '../administrator/entities/administrator.entity.js';
 import { User } from '../users/entities/user.entity.js';
 
+=======
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Organization } from './entities/organization.entity.js';
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
 import { CreateOrganizationDto } from './dto/create-organization.dto.js';
 import { UpdateOrganizationDto } from './dto/update-organization.dto.js';
 
@@ -20,6 +31,7 @@ export class OrganizationsService {
   constructor(
     @InjectRepository(Organization)
     private readonly orgRepo: Repository<Organization>,
+<<<<<<< HEAD
 
     @InjectRepository(Administrator)
     private readonly adminRepo: Repository<Administrator>,
@@ -142,10 +154,40 @@ async getAllOrganizations(): Promise<Organization[]> {
   }
 
   // UPDATE ORGANIZATION
+=======
+  ) {}
+
+  async createOrganization(org: CreateOrganizationDto): Promise<Organization> {
+    try {
+      const newOrg = await this.orgRepo.create(org);
+      return await this.orgRepo.save(newOrg);
+    } catch {
+      throw new BadRequestException('Organization creation failed');
+    }
+  }
+
+  async getAllOrganizations(): Promise<Organization[]> {
+    return await this.orgRepo.find();
+  }
+
+  async getOrganizationById(id: number): Promise<Organization> {
+    const org = await this.orgRepo.findOne({
+      where: {
+        org_id: id,
+      },
+    });
+    if (!org) {
+      throw new NotFoundException(`Organization with id ${id} not found`);
+    }
+    return org;
+  }
+
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
   async updateOrganization(
     id: number,
     org: UpdateOrganizationDto,
   ): Promise<string> {
+<<<<<<< HEAD
     const existingOrg = await this.orgRepo.findOne({
       where: { org_id: id },
     });
@@ -216,3 +258,37 @@ async getAllOrganizations(): Promise<Organization[]> {
     return `Organization deleted with id ${id}`;
   }
 }
+=======
+    const result = (await this.orgRepo.update(id, org)).affected;
+    if (result != undefined && result > 0) {
+      return `Organization updated with id ${id}`;
+    } else {
+      throw new NotFoundException(`Organization with id ${id} not found`);
+    }
+  }
+
+    async verifyOrganization(id: number, adminId: number): Promise<string> {
+    const result = (
+      await this.orgRepo.update(id, {
+        organization_status: 'verified',
+        verified_at: new Date(),
+        verifiedByAdmin: { adminId: adminId },
+      })
+    ).affected;
+    if (result != undefined && result > 0) {
+      return `Organization verified with id ${id}`;
+    } else {
+      throw new NotFoundException(`Organization with id ${id} not found`);
+    }
+  }
+
+  async deleteOrganization(id: number): Promise<string> {
+    const result = (await this.orgRepo.delete(id)).affected;
+    if (result != null && result > 0) {
+      return `Organization deleted with id ${id}`;
+    } else {
+      throw new NotFoundException(`Organization with id ${id} not found`);
+    }
+  }
+}
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361

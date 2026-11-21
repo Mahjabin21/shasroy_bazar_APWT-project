@@ -6,7 +6,10 @@ import { OrderEntity } from './entities/order.entity.js';
 import { OrderItemEntity } from './entities/order-item.entity.js';
 import { Product } from '../products/entities/product.entity.js';
 import { PurchaseLimitsModule } from '../purchase-limits/purchase-limits.module.js';
+<<<<<<< HEAD
 import { BundleItem } from '../bundles/entities/bundle-item.entity.js';
+=======
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
 
 @Module({
   imports: [

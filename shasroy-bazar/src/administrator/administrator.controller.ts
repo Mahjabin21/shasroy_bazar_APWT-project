@@ -42,7 +42,11 @@ export class AdministratorController {
   @Roles('admin')
   adminTest() {
     return {
+<<<<<<< HEAD
       message: 'Administrators accessed this route',
+=======
+      message: 'Only administrators can access this route',
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
     };
   }
 

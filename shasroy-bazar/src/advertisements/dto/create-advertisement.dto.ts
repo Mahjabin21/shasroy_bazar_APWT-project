@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 
 import {
   IsDateString,
+=======
+import {
+  IsDateString,
+  IsInt,
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -30,7 +36,18 @@ export class CreateAdvertisementDto {
   end_date: string;
 
   @IsNotEmpty()
+<<<<<<< HEAD
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
   budget: number;
 }
+=======
+  @IsNumber()
+  @Min(0)
+  budget: number;
+
+  @IsNotEmpty()
+  @IsInt()
+  org_id: number;
+}
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361

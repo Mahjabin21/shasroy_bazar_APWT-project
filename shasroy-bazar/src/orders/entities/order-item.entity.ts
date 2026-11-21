@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,6 +8,10 @@ import {
 } from 'typeorm';
 
 import type { Relation } from 'typeorm';
+=======
+import {Entity,  PrimaryGeneratedColumn, Column,ManyToOne,JoinColumn,type Relation,} from 'typeorm';
+
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
 import { OrderEntity } from './order.entity.js';
 
 @Entity({ name: 'Order_Item' })
@@ -32,4 +37,8 @@ export class OrderItemEntity {
 
   @Column({ type: 'integer', nullable: true })
   bundle_id!: number | null;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361

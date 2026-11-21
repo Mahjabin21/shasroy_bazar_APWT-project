@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 import {
   BadRequestException,
@@ -28,12 +29,26 @@ import { Organization } from '../organizations/entities/organization.entity.js';
 import { CreateAdvertisementDto } from './dto/create-advertisement.dto.js';
 import { UpdateAdvertisementDto } from './dto/update-advertisement.dto.js';
 import { SimulateAdvertisingPaymentDto } from './dto/simulate-advertising-payment.dto.js';
+=======
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Advertisement } from './entities/advertisement.entity.js';
+import { Organization } from '../organizations/entities/organization.entity.js';
+import { CreateAdvertisementDto } from './dto/create-advertisement.dto.js';
+import { UpdateAdvertisementDto } from './dto/update-advertisement.dto.js';
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
 
 @Injectable()
 export class AdvertisementsService {
   constructor(
     @InjectRepository(Advertisement)
     private readonly adRepo: Repository<Advertisement>,
+<<<<<<< HEAD
 
     @InjectRepository(Organization)
     private readonly orgRepo: Repository<Organization>,
@@ -271,16 +286,56 @@ export class AdvertisementsService {
       relations: {
         organization: true,
         reviewedByAdmin: true,
+=======
+    @InjectRepository(Organization)
+    private readonly orgRepo: Repository<Organization>,
+  ) {}
+
+  async createAdvertisement(ad: CreateAdvertisementDto)
+  {
+    const org = await this.orgRepo.findOne({
+      where: {
+        org_id: ad.org_id,
+      },
+    });
+    if (!org) {
+      throw new NotFoundException(`Organization with id ${ad.org_id} not found`);
+    }
+    try {
+      const newAd = await this.adRepo.create({
+        campaign_name: ad.campaign_name,
+        content_url: ad.content_url,
+        start_date: new Date(ad.start_date),
+        end_date: new Date(ad.end_date),
+        budget: ad.budget,
+        organization: org,
+      });
+      return await this.adRepo.save(newAd);
+    } catch {
+      throw new BadRequestException('Advertisement creation failed');
+    }
+  }
+
+  async getAllAdvertisements() {
+    return await this.adRepo.find({
+            relations: {
+        organization: true,
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
       },
     });
   }
 
+<<<<<<< HEAD
   // ADMIN: GET ADVERTISEMENT BY ID
   async getAdvertisementById(id: number) {
+=======
+  async getAdvertisementById(id: number){
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
     const ad = await this.adRepo.findOne({
       where: {
         ad_id: id,
       },
+<<<<<<< HEAD
       relations: {
         organization: true,
         reviewedByAdmin: true,
@@ -297,10 +352,23 @@ export class AdvertisementsService {
   }
 
   // ADMIN: UPDATE ADVERTISEMENT
+=======
+            relations: {
+        organization: true,
+      },
+    });
+    if (!ad) {
+      throw new NotFoundException(`Advertisement with id ${id} not found`);
+    }
+    return ad;
+  }
+
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
   async updateAdvertisement(
     id: number,
     ad: UpdateAdvertisementDto,
   ) {
+<<<<<<< HEAD
     return await this.dataSource.transaction(async (manager) => {
       const advertisementRepository =
         manager.getRepository(Advertisement);
@@ -524,5 +592,51 @@ export class AdvertisementsService {
         reviewed_at: 'ASC',
       },
     });
+=======
+    const oldAd = await this.getAdvertisementById(id);
+
+    if (ad.org_id) {
+      const org = await this.orgRepo.findOne({
+        where: {
+          org_id: ad.org_id,
+        },
+      });
+      if (!org) {
+        throw new NotFoundException(`Organization with id ${ad.org_id} not found`);
+      }
+      oldAd.organization = org;
+    }
+    if (ad.campaign_name) oldAd.campaign_name = ad.campaign_name;
+    if (ad.content_url) oldAd.content_url = ad.content_url;
+    if (ad.start_date) oldAd.start_date = new Date(ad.start_date);
+    if (ad.end_date) oldAd.end_date = new Date(ad.end_date);
+    if (ad.budget != undefined) oldAd.budget = ad.budget;
+
+    await this.adRepo.save(oldAd);
+    return `Advertisement updated with id ${id}`;
+  }
+
+    async approveAdvertisement(id: number, adminId: number){
+    const result = (
+      await this.adRepo.update(id, {
+        ad_status: 'approved',
+        approvedByAdmin: { adminId: adminId },
+      })
+    ).affected;
+    if (result != undefined && result > 0) {
+      return `Advertisement approved with id ${id}`;
+    } else {
+      throw new NotFoundException(`Advertisement with id ${id} not found`);
+    }
+  }
+
+  async deleteAdvertisement(id: number) {
+    const result = (await this.adRepo.delete(id)).affected;
+    if (result != null && result > 0) {
+      return `Advertisement deleted with id ${id}`;
+    } else {
+      throw new NotFoundException(`Advertisement with id ${id} not found`);
+    }
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
   }
 }

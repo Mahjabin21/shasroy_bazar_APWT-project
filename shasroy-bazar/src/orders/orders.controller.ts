@@ -29,6 +29,7 @@ export class OrdersController {
   @ApiBody({
     schema: {
       example: {
+<<<<<<< HEAD
         zone_id: 2,
         fulfillment_type: 'pickup',
         items: [
@@ -37,6 +38,18 @@ export class OrdersController {
             quantity: 2,
           },
         ],
+=======
+        zone_id: 1,
+        fulfillment_type: 'delivery',
+        items: [
+          {
+            listing_id: 1,
+            quantity: 2,
+          },
+        ],
+        delivery_address: 'House 10, Road 2, Dhaka',
+        recipient_phone: '01712345678',
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
       },
     },
   })

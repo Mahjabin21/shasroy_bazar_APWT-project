@@ -38,7 +38,11 @@ export class ServiceZonesController {
       },
     },
   })
+<<<<<<< HEAD
   @Post("create-service-zone")
+=======
+  @Post()
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
   create(
     @Body() dto: CreateServiceZoneDto,
     @Req() req: any,

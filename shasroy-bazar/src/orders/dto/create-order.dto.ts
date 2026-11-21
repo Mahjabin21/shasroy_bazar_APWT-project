@@ -14,6 +14,7 @@ import {
   Matches,
   MaxLength,
   Min,
+<<<<<<< HEAD
   Validate,
   ValidateNested,
   ValidatorConstraint,
@@ -55,6 +56,18 @@ export class OrderItemDto {
   @IsOptional()
   @IsInt()
   bundle_id?: number;
+=======
+  ValidateNested,
+} from 'class-validator';
+
+export class OrderItemDto {
+  @ApiProperty({
+    example: 12,
+    description: 'Product listing ID',
+  })
+  @IsInt()
+  listing_id: number;
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
 
   @ApiProperty({
     example: 2,
@@ -66,15 +79,22 @@ export class OrderItemDto {
 
   @ApiPropertyOptional({
     example: 25.5,
+<<<<<<< HEAD
     description: 'Optional display price. Server-side price is authoritative.',
+=======
+    description: 'Optional display price. Server-side product price is authoritative.',
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
   })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   unit_price?: number;
+<<<<<<< HEAD
 
   @Validate(OrderItemIdentifierValidator)
   private readonly orderItemIdentifierCheck?: boolean;
+=======
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
 }
 
 export class CreateOrderDto {
@@ -86,11 +106,19 @@ export class CreateOrderDto {
   zone_id: number;
 
   @ApiPropertyOptional({
+<<<<<<< HEAD
     enum: ['pickup'],
     default: 'pickup',
   })
   @IsOptional()
   @IsIn(['pickup'])
+=======
+    enum: ['delivery', 'pickup'],
+    default: 'pickup',
+  })
+  @IsOptional()
+  @IsIn(['delivery', 'pickup'])
+>>>>>>> a9c1a7ad7c6549643db90629e34165a48dc5a361
   fulfillment_type?: string;
 
   @ApiProperty({
